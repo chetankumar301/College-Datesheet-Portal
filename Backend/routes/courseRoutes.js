@@ -3,9 +3,45 @@ const express = require("express");
 const router = express.Router();
 
 const {
-  testCourse,
+
+createCourse,
+
+getCourses
+
 } = require("../controllers/courseController");
 
-router.get("/", testCourse);
+const {
+
+protect
+
+} = require("../middleware/authMiddleware");
+
+const {
+
+authorize
+
+} = require("../middleware/roleMiddleware");
+
+router.post(
+
+"/",
+
+protect,
+
+authorize("admin"),
+
+createCourse
+
+);
+
+router.get(
+
+"/",
+
+protect,
+
+getCourses
+
+);
 
 module.exports = router;

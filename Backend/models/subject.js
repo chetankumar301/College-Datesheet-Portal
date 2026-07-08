@@ -6,17 +6,13 @@ const subjectSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      uppercase: true,
     },
 
     subjectName: {
       type: String,
       required: true,
       trim: true,
-    },
-
-    semester: {
-      type: Number,
-      required: true,
     },
 
     course: {
@@ -29,6 +25,29 @@ const subjectSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Branch",
       required: true,
+    },
+
+    year: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+
+    semester: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+
+    credits: {
+      type: Number,
+      default: 4,
+    },
+
+    subjectType: {
+      type: String,
+      enum: ["Theory", "Practical", "Project"],
+      default: "Theory",
     },
 
     isActive: {

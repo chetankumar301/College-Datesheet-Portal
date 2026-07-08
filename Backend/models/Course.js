@@ -14,11 +14,12 @@ const courseSchema = new mongoose.Schema(
       required: true,
       unique: true,
       trim: true,
+      uppercase: true,
     },
 
     totalSemesters: {
       type: Number,
-      default: 8,
+      required: true,
     },
 
     isActive: {

@@ -1,54 +1,68 @@
 const mongoose = require("mongoose");
 
 const datesheetSchema = new mongoose.Schema(
-  {
-    title: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+{
 
-    examType: {
-      type: String,
-      enum: ["MAIN", "BACK", "PRACTICAL"],
-      required: true,
-    },
+title:{
+type:String,
+required:true
+},
 
-    course: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Course",
-      required: true,
-    },
+academicSession:{
+type:mongoose.Schema.Types.ObjectId,
+ref:"AcademicSession",
+required:true
+},
 
-    branch: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Branch",
-      required: true,
-    },
+course:{
+type:mongoose.Schema.Types.ObjectId,
+ref:"Course",
+required:true
+},
 
-    semester: {
-      type: Number,
-      required: true,
-    },
+branch:{
+type:mongoose.Schema.Types.ObjectId,
+ref:"Branch",
+required:true
+},
 
-    pdfFile: {
-      type: String,
-      required: true,
-    },
+semester:{
+type:Number,
+required:true
+},
 
-    published: {
-      type: Boolean,
-      default: false,
-    },
+examType:{
+type:String,
+enum:["MAIN","BACK","PRACTICAL"],
+required:true
+},
 
-    uploadedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
-  },
-  {
-    timestamps: true,
-  }
+version:{
+type:Number,
+default:1
+},
+
+published:{
+type:Boolean,
+default:false
+},
+
+uploadedPDF:{
+type:mongoose.Schema.Types.ObjectId,
+ref:"UploadedPDF"
+},
+
+uploadedBy:{
+type:mongoose.Schema.Types.ObjectId,
+ref:"User"
+}
+
+},
+{
+timestamps:true
+});
+
+module.exports=mongoose.model(
+"Datesheet",
+datesheetSchema
 );
-
-module.exports = mongoose.model("Datesheet", datesheetSchema);

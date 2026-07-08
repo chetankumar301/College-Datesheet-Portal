@@ -3,9 +3,45 @@ const express = require("express");
 const router = express.Router();
 
 const {
-  testSubject,
+
+createSubject,
+
+getSubjectsBySemester
+
 } = require("../controllers/subjectController");
 
-router.get("/", testSubject);
+const {
+
+protect
+
+} = require("../middleware/authMiddleware");
+
+const {
+
+authorize
+
+} = require("../middleware/roleMiddleware");
+
+router.post(
+
+"/",
+
+protect,
+
+authorize("admin"),
+
+createSubject
+
+);
+
+router.get(
+
+"/:branchId/:semester",
+
+protect,
+
+getSubjectsBySemester
+
+);
 
 module.exports = router;

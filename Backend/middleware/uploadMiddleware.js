@@ -1,30 +1,58 @@
-const multer = require("multer");
-const path = require("path");
+const multer=require("multer");
+const path=require("path");
 
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, "uploads/pdfs/");
-  },
+const storage=multer.diskStorage({
 
-  filename(req, file, cb) {
-    cb(
-      null,
-      Date.now() + path.extname(file.originalname)
-    );
-  },
+destination(req,file,cb){
+
+cb(null,"uploads/pdfs");
+
+},
+
+filename(req,file,cb){
+
+const uniqueName=Date.now()+"-"+Math.round(Math.random()*1E9);
+
+cb(
+
+null,
+
+uniqueName+path.extname(file.originalname)
+
+);
+
+}
+
 });
 
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype === "application/pdf") {
-    cb(null, true);
-  } else {
-    cb(new Error("Only PDF files are allowed"), false);
-  }
+const fileFilter=(req,file,cb)=>{
+
+if(file.mimetype==="application/pdf"){
+
+cb(null,true);
+
+}
+
+else{
+
+cb(new Error("Only PDF files allowed"));
+
+}
+
 };
 
-const upload = multer({
-  storage,
-  fileFilter,
+const upload=multer({
+
+storage,
+
+limits:{
+
+fileSize:10*1024*1024
+
+},
+
+fileFilter
+
 });
 
-module.exports = upload;
+module.exports=upload;

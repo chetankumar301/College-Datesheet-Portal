@@ -8,6 +8,8 @@ const courseRoutes = require("./routes/courseRoutes");
 const branchRoutes = require("./routes/branchRoutes");
 const subjectRoutes = require("./routes/subjectRoutes");
 const datesheetRoutes = require("./routes/datesheetRoutes");
+const academicSessionRoutes = require("./routes/academicSessionRoutes");
+const pdfRoutes=require("./routes/pdfRoutes");
 
 const app = express();
 
@@ -25,6 +27,8 @@ app.use("/api/course", courseRoutes);
 app.use("/api/branch", branchRoutes);
 app.use("/api/subject", subjectRoutes);
 app.use("/api/datesheet", datesheetRoutes);
+app.use("/api/session",academicSessionRoutes);
+app.use("/api/pdf",pdfRoutes);
 
 // ==============================
 // Home Route
