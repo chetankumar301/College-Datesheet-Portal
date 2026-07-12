@@ -1,5 +1,6 @@
 const app = require("./app");
 require("dotenv").config();
+require("./worker/parserWorker");
 
 const connectDB = require("./config/db");
 

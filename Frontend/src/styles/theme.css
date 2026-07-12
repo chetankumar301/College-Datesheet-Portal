@@ -1,0 +1,19 @@
+.dark{
+
+background:#0f172a;
+
+color:white;
+
+}
+
+.dark .card,
+
+.dark .student-box,
+
+.dark .dashboard-box{
+
+background:#1e293b;
+
+color:white;
+
+}

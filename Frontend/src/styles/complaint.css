@@ -1,0 +1,57 @@
+form{
+
+display:flex;
+
+flex-direction:column;
+
+gap:15px;
+
+background:white;
+
+padding:25px;
+
+border-radius:15px;
+
+}
+
+form select,
+
+form textarea,
+
+form input{
+
+padding:12px;
+
+border-radius:8px;
+
+border:1px solid #ddd;
+
+}
+
+form button{
+
+padding:14px;
+
+background:#2563eb;
+
+color:white;
+
+border:none;
+
+border-radius:8px;
+
+}
+
+.complaint-card{
+
+background:white;
+
+padding:20px;
+
+margin-top:20px;
+
+border-radius:12px;
+
+box-shadow:0 5px 15px rgba(0,0,0,.08);
+
+}

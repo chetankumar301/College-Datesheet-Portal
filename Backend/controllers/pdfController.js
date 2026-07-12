@@ -1,5 +1,7 @@
 const UploadedPDF=require("../models/UploadedPDF");
 
+const createParserJob=require("../jobs/parserJob");
+
 exports.uploadPDF=async(req,res)=>{
 
 try{
@@ -53,5 +55,22 @@ message:err.message
 });
 
 }
+
+};
+exports.getPDFStatus = async(req,res)=>{
+
+    const pdf = await UploadedPDF.findById(
+
+        req.params.id
+
+    );
+
+    res.json({
+
+        success:true,
+
+        status:pdf.status
+
+    });
 
 };

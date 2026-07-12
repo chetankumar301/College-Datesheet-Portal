@@ -34,14 +34,22 @@ const userSchema = new mongoose.Schema(
     },
 
     course: {
-      type: String,
-      default: "",
-    },
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Course",
+    required: true
+},
 
-    branch: {
-      type: String,
-      default: "",
-    },
+branch: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Branch",
+    required: true
+},
+
+academicSession: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "AcademicSession",
+    required: true
+},
 
     semester: {
       type: Number,

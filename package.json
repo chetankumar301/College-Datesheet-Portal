@@ -1,6 +1,8 @@
 {
   "dependencies": {
+    "bull": "^4.16.5",
     "exceljs": "^4.4.0",
+    "ioredis": "^5.11.1",
     "pdf-parse": "^2.4.5"
   }
 }

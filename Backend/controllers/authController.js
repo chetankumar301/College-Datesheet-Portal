@@ -63,9 +63,18 @@ const login = async (req, res) => {
 
   try {
 
-    const { email, password } = req.body;
+    const { studentId, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const normalizedId = studentId?.trim();
+
+    // Try to find user by enrollmentNo (student) or email (admin)
+    let user = await User.findOne({ enrollmentNo: normalizedId });
+    
+    // If not found in User model, try Admin model (email is stored lowercase)
+    if (!user) {
+      const Admin = require("../models/Admin");
+      user = await Admin.findOne({ email: normalizedId.toLowerCase() });
+    }
 
     if (!user) {
 
@@ -114,7 +123,40 @@ const login = async (req, res) => {
   }
 };
 
+const getProfile = async (req, res) => {
+
+    try {
+
+        res.status(200).json({
+
+            success: true,
+
+            data: req.user
+
+        });
+
+    }
+
+    catch (err) {
+
+        res.status(500).json({
+
+            success: false,
+
+            message: err.message
+
+        });
+
+    }
+
+};
+
 module.exports = {
-  register,
-  login,
+
+    register,
+
+    login,
+
+    getProfile
+
 };

@@ -2,7 +2,11 @@ const authorize = (...roles) => {
 
     return (req, res, next) => {
 
-        if (!roles.includes(req.user.role)) {
+        const isAllowed =
+            roles.includes(req.user.role) ||
+            (req.user.role === "super_admin" && roles.includes("admin"));
+
+        if (!isAllowed) {
 
             return res.status(403).json({
 

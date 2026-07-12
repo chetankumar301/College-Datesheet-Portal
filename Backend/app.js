@@ -10,6 +10,12 @@ const subjectRoutes = require("./routes/subjectRoutes");
 const datesheetRoutes = require("./routes/datesheetRoutes");
 const academicSessionRoutes = require("./routes/academicSessionRoutes");
 const pdfRoutes=require("./routes/pdfRoutes");
+const parsingJobRoutes=require("./routes/parsingJobRoutes");
+const studentExamRoutes=require("./routes/studentExamRoutes");
+const notificationRoutes=require("./routes/notificationRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
+const complaintRoutes=require("./routes/complaintRoutes");
+const clashRoutes = require("./routes/clashRoutes");
 
 const app = express();
 
@@ -29,6 +35,12 @@ app.use("/api/subject", subjectRoutes);
 app.use("/api/datesheet", datesheetRoutes);
 app.use("/api/session",academicSessionRoutes);
 app.use("/api/pdf",pdfRoutes);
+app.use("/api/parsing-job",parsingJobRoutes);
+app.use("/api/student",studentExamRoutes);
+app.use("/api/notifications",notificationRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/complaints",complaintRoutes);
+app.use("/api/clashes",clashRoutes);
 
 // ==============================
 // Home Route
@@ -58,11 +70,11 @@ app.use("/api/admin", adminRoutes);
 // 404 Route
 // ==============================
 
-app.use("*", (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: "Route Not Found",
-  });
+app.use((req, res) => {
+    res.status(404).json({
+        success: false,
+        message: "Route not found"
+    });
 });
 
 // ==============================

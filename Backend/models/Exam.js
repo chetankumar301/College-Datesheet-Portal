@@ -1,46 +1,64 @@
 const mongoose = require("mongoose");
 
-const examSchema = new mongoose.Schema(
-{
-    datesheet:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Datesheet",
-        required:true
+const examSchema = new mongoose.Schema({
+
+    examSchedule: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "ExamSchedule",
+        required: true
     },
 
-    subject:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Subject",
-        required:true
+    subject: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Subject",
+        required: true
     },
 
-    examDate:{
-        type:Date,
-        required:true
+    course: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Course",
+        required: true
     },
 
-    startTime:{
-        type:String,
-        required:true
+    branch: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Branch",
+        required: true
     },
 
-    endTime:{
-        type:String,
-        default:""
+    academicSession: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "AcademicSession",
+        required: true
     },
 
-    session:{
-        type:String,
-        default:"Morning"
+    semester: {
+        type: Number,
+        required: true
     },
 
-    venue:{
-        type:String,
-        default:"TBA"
+    examDate: {
+        type: String,
+        required: true
+    },
+
+    startTime: {
+        type: String,
+        required: true
+    },
+
+    endTime: {
+        type: String,
+        required: true
+    },
+
+    status: {
+        type: String,
+        default: "SCHEDULED"
     }
-},
-{
-timestamps:true
+
+}, {
+    timestamps: true
 });
 
-module.exports=mongoose.model("Exam",examSchema);
+module.exports = mongoose.model("Exam", examSchema);

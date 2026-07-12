@@ -2,11 +2,10 @@ const express=require("express");
 
 const router=express.Router();
 
-const{
-
-uploadPDF
-
-}=require("../controllers/pdfController");
+const {
+    uploadPDF,
+    getPDFStatus
+} = require("../controllers/pdfController");
 
 const{
 
@@ -33,6 +32,15 @@ authorize("admin"),
 upload.single("pdf"),
 
 uploadPDF
+
+);
+router.get(
+
+"/status/:id",
+
+protect,
+
+getPDFStatus
 
 );
 
