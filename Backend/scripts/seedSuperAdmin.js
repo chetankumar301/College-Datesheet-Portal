@@ -9,30 +9,25 @@ const seedSuperAdmin = async () => {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ Connected to MongoDB");
 
-    // Check if super admin already exists
-    const existingAdmin = await Admin.findOne({ email: "chetan149" });
-    
-    if (existingAdmin) {
-      console.log("⚠️  Super admin already exists with email: chetan149");
-      console.log("If you want to recreate, delete the existing admin first.");
-      process.exit(0);
-    }
+    // Delete existing super admin if exists
+    await Admin.deleteOne({ email: "Chetan149" });
+    console.log("🗑️  Deleted existing super admin if any");
 
     // Hash the password
-    const hashedPassword = await bcrypt.hash("91492253555", 10);
+    const hashedPassword = await bcrypt.hash("9149225355", 10);
     console.log("✅ Password hashed successfully");
 
     // Create super admin
     const superAdmin = await Admin.create({
       name: "Super Admin",
-      email: "chetan149",
+      email: "Chetan149",
       password: hashedPassword,
       role: "super_admin"
     });
 
     console.log("✅ Super admin created successfully:");
-    console.log("   Email: chetan149");
-    console.log("   Password: 91492253555");
+    console.log("   Username: Chetan149");
+    console.log("   Password: 9149225355");
     console.log("   Role: super_admin");
 
     process.exit(0);

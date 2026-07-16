@@ -13,9 +13,13 @@ import {
 
 import { NavLink } from "react-router-dom";
 
+import { useAuth } from "../../context/AuthContext";
+
 import "../../styles/sidebar.css";
 
 export default function Sidebar() {
+
+    const { user } = useAuth();
 
     const menus = [
 
@@ -66,6 +70,12 @@ export default function Sidebar() {
             path:"/notifications",
             icon:<FaBell/>
         },
+
+        ...(user?.role === "super_admin" ? [{
+            name:"Admin Management",
+            path:"/super-admin/admin-management",
+            icon:<FaCog/>
+        }] : []),
 
         {
             name:"Settings",

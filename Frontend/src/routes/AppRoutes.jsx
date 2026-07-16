@@ -17,6 +17,8 @@ import StudentProfile from "../pages/StudentProfile";
 import StudentBackDatesheet from "../pages/StudentBackDatesheet";
 import AdminRoute from "./AdminRoute";
 import StudentRoute from "./StudentRoute";
+import SuperAdminRoute from "./SuperAdminRoute";
+import AdminManagement from "../pages/AdminManagement";
 
 export default function AppRoutes(){
 
@@ -84,6 +86,22 @@ export default function AppRoutes(){
                 <Preview/>
 
                 </AdminRoute>
+
+                }
+
+                />
+
+                <Route
+
+                path="/super-admin/admin-management"
+
+                element={
+
+                <SuperAdminRoute>
+
+                <AdminManagement/>
+
+                </SuperAdminRoute>
 
                 }
 

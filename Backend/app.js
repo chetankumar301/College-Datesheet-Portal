@@ -16,6 +16,7 @@ const notificationRoutes=require("./routes/notificationRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const complaintRoutes=require("./routes/complaintRoutes");
 const clashRoutes = require("./routes/clashRoutes");
+const adminManagementRoutes = require("./routes/adminManagementRoutes");
 
 const app = express();
 
@@ -23,7 +24,10 @@ const app = express();
 // Middlewares
 // ==============================
 
-app.use(cors());
+app.use(cors({
+    origin: ["http://localhost:5173", "http://localhost:5174"],
+    credentials: true
+}));
 
 app.use(express.json());
 
@@ -41,6 +45,7 @@ app.use("/api/notifications",notificationRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/complaints",complaintRoutes);
 app.use("/api/clashes",clashRoutes);
+app.use("/api/super-admin", adminManagementRoutes);
 
 // ==============================
 // Home Route

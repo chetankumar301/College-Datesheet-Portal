@@ -21,11 +21,17 @@ export default function Login() {
         e.preventDefault();
 
         try {
-
+            console.log("Attempting login with:", studentId);
            const res = await loginUser(studentId, password);
 
             console.log("Login response:", res);
-            console.log("User role:", res.user.role);
+            console.log("User role:", res.user?.role);
+
+            if (!res.user) {
+                console.error("No user in response");
+                toast.error("Login Failed: No user data received");
+                return;
+            }
 
             login(
 
@@ -52,7 +58,8 @@ export default function Login() {
         }
 
         catch (err) {
-
+            console.error("Login error:", err);
+            console.error("Error response:", err.response?.data);
             toast.error(
 
                 err.response?.data?.message ||

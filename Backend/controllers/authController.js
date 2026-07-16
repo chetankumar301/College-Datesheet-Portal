@@ -63,21 +63,26 @@ const login = async (req, res) => {
 
   try {
 
+    console.log("Login request received:", req.body);
     const { studentId, password } = req.body;
 
     const normalizedId = studentId?.trim();
+    console.log("Normalized ID:", normalizedId);
 
     // Try to find user by enrollmentNo (student) or email (admin)
     let user = await User.findOne({ enrollmentNo: normalizedId });
+    console.log("User found in User model:", !!user);
     
     // If not found in User model, try Admin model (email is stored lowercase)
     if (!user) {
       const Admin = require("../models/Admin");
       user = await Admin.findOne({ email: normalizedId.toLowerCase() });
+      console.log("User found in Admin model:", !!user);
     }
 
     if (!user) {
 
+      console.log("User not found for:", normalizedId);
       return res.status(404).json({
         success: false,
         message: "User not found",
@@ -86,6 +91,7 @@ const login = async (req, res) => {
     }
 
     const match = await bcrypt.compare(password, user.password);
+    console.log("Password match:", match);
 
     if (!match) {
 
@@ -107,6 +113,7 @@ const login = async (req, res) => {
       }
     );
 
+    console.log("Login successful for user:", user.email, "Role:", user.role);
     res.json({
       success: true,
       token,
@@ -115,6 +122,7 @@ const login = async (req, res) => {
 
   } catch (err) {
 
+    console.error("Login error:", err);
     res.status(500).json({
       success: false,
       message: err.message,
