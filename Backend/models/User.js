@@ -33,6 +33,13 @@ const userSchema = new mongoose.Schema(
       default: "student",
     },
 
+    // College reference for multi-tenant support
+    college: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "College",
+      required: true,
+    },
+
     course: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Course",

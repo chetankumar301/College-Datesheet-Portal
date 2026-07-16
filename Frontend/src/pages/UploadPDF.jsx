@@ -22,6 +22,8 @@ export default function UploadPDF(){
 
 const[file,setFile]=useState(null);
 
+const[examType,setExamType]=useState("MAIN");
+
 const[progress,setProgress]=useState(0);
 
 const[uploads,setUploads]=useState([]);
@@ -55,6 +57,8 @@ formData.append(
 file
 
 );
+
+formData.append("examType", examType);
 
 await uploadPDF(
 
@@ -93,6 +97,27 @@ return(
 Upload Datesheet PDF
 
 </h1>
+
+<div className="exam-type-selector">
+    <label>
+        <input
+            type="radio"
+            value="MAIN"
+            checked={examType === "MAIN"}
+            onChange={(e) => setExamType(e.target.value)}
+        />
+        Main Exam
+    </label>
+    <label>
+        <input
+            type="radio"
+            value="BACK"
+            checked={examType === "BACK"}
+            onChange={(e) => setExamType(e.target.value)}
+        />
+        Back Exam
+    </label>
+</div>
 
 <input
 

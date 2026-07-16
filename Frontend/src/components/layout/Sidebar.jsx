@@ -25,57 +25,93 @@ export default function Sidebar() {
 
         {
             name:"Dashboard",
-            path:"/admin/dashboard",
+            path: user?.role === "super_admin" ? "/super-admin/dashboard" : user?.role === "sub_super_admin" ? "/sub-super-admin/dashboard" : "/admin/dashboard",
             icon:<FaHome/>
         },
 
-        {
-            name:"Upload PDF",
-            path:"/upload",
-            icon:<FaFilePdf/>
-        },
+        ...(user?.role === "super_admin" ? [
+            {
+                name:"Colleges",
+                path:"/super-admin/colleges",
+                icon:<FaUserGraduate/>
+            },
+            {
+                name:"Subscriptions",
+                path:"/super-admin/subscriptions",
+                icon:<FaCalendarAlt/>
+            },
+            {
+                name:"Admin Management",
+                path:"/super-admin/admin-management",
+                icon:<FaCog/>
+            },
+            {
+                name:"Analytics",
+                path:"/super-admin/analytics",
+                icon:<FaTasks/>
+            },
+            {
+                name:"Audit Logs",
+                path:"/super-admin/audit-logs",
+                icon:<FaExclamationTriangle/>
+            },
+        ] : []),
 
-        {
-            name:"Parsing Jobs",
-            path:"/parsing",
-            icon:<FaTasks/>
-        },
+        ...(user?.role === "sub_super_admin" ? [
+            {
+                name:"Datesheet Approval",
+                path:"/sub-super-admin/datesheet-approval",
+                icon:<FaCalendarAlt/>
+            },
+            {
+                name:"Admin Management",
+                path:"/super-admin/admin-management",
+                icon:<FaCog/>
+            },
+            {
+                name:"Audit Logs",
+                path:"/super-admin/audit-logs",
+                icon:<FaExclamationTriangle/>
+            },
+        ] : []),
 
-        {
-            name:"Published",
-            path:"/published",
-            icon:<FaCalendarAlt/>
-        },
-
-        {
-            name:"Students",
-            path:"/students",
-            icon:<FaUserGraduate/>
-        },
-
-        {
-            name:"Subjects",
-            path:"/subjects",
-            icon:<FaBook/>
-        },
-
-        {
-            name:"Complaints",
-            path:"/complaints",
-            icon:<FaExclamationTriangle/>
-        },
-
-        {
-            name:"Notifications",
-            path:"/notifications",
-            icon:<FaBell/>
-        },
-
-        ...(user?.role === "super_admin" ? [{
-            name:"Admin Management",
-            path:"/super-admin/admin-management",
-            icon:<FaCog/>
-        }] : []),
+        ...(user?.role === "admin" ? [
+            {
+                name:"Upload PDF",
+                path:"/upload",
+                icon:<FaFilePdf/>
+            },
+            {
+                name:"Parsing Jobs",
+                path:"/parsing",
+                icon:<FaTasks/>
+            },
+            {
+                name:"Published",
+                path:"/published",
+                icon:<FaCalendarAlt/>
+            },
+            {
+                name:"Students",
+                path:"/students",
+                icon:<FaUserGraduate/>
+            },
+            {
+                name:"Subjects",
+                path:"/subjects",
+                icon:<FaBook/>
+            },
+            {
+                name:"Complaints",
+                path:"/complaints",
+                icon:<FaExclamationTriangle/>
+            },
+            {
+                name:"Notifications",
+                path:"/notifications",
+                icon:<FaBell/>
+            },
+        ] : []),
 
         {
             name:"Settings",

@@ -18,7 +18,15 @@ import StudentBackDatesheet from "../pages/StudentBackDatesheet";
 import AdminRoute from "./AdminRoute";
 import StudentRoute from "./StudentRoute";
 import SuperAdminRoute from "./SuperAdminRoute";
+import SubSuperAdminRoute from "./SubSuperAdminRoute";
 import AdminManagement from "../pages/AdminManagement";
+import SuperAdminDashboard from "../pages/SuperAdminDashboard";
+import CollegeManagement from "../pages/CollegeManagement";
+import SubscriptionManagement from "../pages/SubscriptionManagement";
+import SubSuperAdminDashboard from "../pages/SubSuperAdminDashboard";
+import DatesheetApproval from "../pages/DatesheetApproval";
+import AuditLogViewer from "../pages/AuditLogViewer";
+import AnalyticsDashboard from "../pages/AnalyticsDashboard";
 
 export default function AppRoutes(){
 
@@ -102,6 +110,118 @@ export default function AppRoutes(){
                 <AdminManagement/>
 
                 </SuperAdminRoute>
+
+                }
+
+                />
+
+                <Route
+
+                path="/super-admin/dashboard"
+
+                element={
+
+                <SuperAdminRoute>
+
+                <SuperAdminDashboard/>
+
+                </SuperAdminRoute>
+
+                }
+
+                />
+
+                <Route
+
+                path="/super-admin/colleges"
+
+                element={
+
+                <SuperAdminRoute>
+
+                <CollegeManagement/>
+
+                </SuperAdminRoute>
+
+                }
+
+                />
+
+                <Route
+
+                path="/super-admin/subscriptions"
+
+                element={
+
+                <SuperAdminRoute>
+
+                <SubscriptionManagement/>
+
+                </SuperAdminRoute>
+
+                }
+
+                />
+
+                <Route
+
+                path="/super-admin/analytics"
+
+                element={
+
+                <SuperAdminRoute>
+
+                <AnalyticsDashboard/>
+
+                </SuperAdminRoute>
+
+                }
+
+                />
+
+                <Route
+
+                path="/super-admin/audit-logs"
+
+                element={
+
+                <SuperAdminRoute>
+
+                <AuditLogViewer/>
+
+                </SuperAdminRoute>
+
+                }
+
+                />
+
+                <Route
+
+                path="/sub-super-admin/dashboard"
+
+                element={
+
+                <SubSuperAdminRoute>
+
+                <SubSuperAdminDashboard/>
+
+                </SubSuperAdminRoute>
+
+                }
+
+                />
+
+                <Route
+
+                path="/sub-super-admin/datesheet-approval"
+
+                element={
+
+                <SubSuperAdminRoute>
+
+                <DatesheetApproval/>
+
+                </SubSuperAdminRoute>
 
                 }
 

@@ -41,13 +41,24 @@ export default function Login() {
 
                 );
 
-                if (res.user.role === "admin" || res.user.role === "super_admin") {
+                if (res.user.role === "super_admin") {
+
+                console.log("Navigating to super admin dashboard");
+                navigate("/super-admin/dashboard");
+
+                    }
+                else if (res.user.role === "sub_super_admin") {
+
+                console.log("Navigating to sub super admin dashboard");
+                navigate("/sub-super-admin/dashboard");
+
+                    }
+                else if (res.user.role === "admin") {
 
                 console.log("Navigating to admin dashboard");
                 navigate("/admin/dashboard");
 
                     }
-
                 else {
 
                 console.log("Navigating to student dashboard");

@@ -17,6 +17,11 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const complaintRoutes=require("./routes/complaintRoutes");
 const clashRoutes = require("./routes/clashRoutes");
 const adminManagementRoutes = require("./routes/adminManagementRoutes");
+const collegeRoutes = require("./routes/collegeRoutes");
+const subscriptionRoutes = require("./routes/subscriptionRoutes");
+const auditLogRoutes = require("./routes/auditLogRoutes");
+const analyticsRoutes = require("./routes/analyticsRoutes");
+const datesheetApprovalRoutes = require("./routes/datesheetApprovalRoutes");
 
 const app = express();
 
@@ -46,6 +51,11 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/complaints",complaintRoutes);
 app.use("/api/clashes",clashRoutes);
 app.use("/api/super-admin", adminManagementRoutes);
+app.use("/api/colleges", collegeRoutes);
+app.use("/api/subscriptions", subscriptionRoutes);
+app.use("/api/audit-logs", auditLogRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use("/api/datesheet-approval", datesheetApprovalRoutes);
 
 // ==============================
 // Home Route
