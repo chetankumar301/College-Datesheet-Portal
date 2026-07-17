@@ -23,14 +23,18 @@ export const AuthProvider = ({ children }) => {
 
             if (!token) {
 
+                console.log("No token found, setting loading to false");
+                setLoading(false);
                 return;
 
             }
 
+            console.log("Token found, fetching user profile");
             const res = await api.get("/auth/profile");
 
             if (localStorage.getItem("token") === token) {
 
+                console.log("User profile loaded:", res.data.data);
                 setUser(res.data.data);
 
             }
@@ -39,20 +43,17 @@ export const AuthProvider = ({ children }) => {
 
         catch (err) {
 
-            console.log(err);
+            console.error("Error loading user:", err);
 
-            if (localStorage.getItem("token") === token) {
+            localStorage.removeItem("token");
 
-                localStorage.removeItem("token");
-
-                setUser(null);
-
-            }
+            setUser(null);
 
         }
 
         finally {
 
+            console.log("Setting loading to false");
             setLoading(false);
 
         }
@@ -77,6 +78,10 @@ export const AuthProvider = ({ children }) => {
 
     };
 
+    if (loading) {
+        return <div className="loading">Loading...</div>;
+    }
+
     return (
 
         <AuthContext.Provider
@@ -85,8 +90,7 @@ export const AuthProvider = ({ children }) => {
 
                 user,
 
-                loading,
-
+                loading: false,
                 login,
 
                 logout,

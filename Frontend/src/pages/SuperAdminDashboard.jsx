@@ -7,6 +7,7 @@ export default function SuperAdminDashboard() {
     const [analytics, setAnalytics] = useState(null);
     const [collegeStats, setCollegeStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         loadData();
@@ -14,14 +15,24 @@ export default function SuperAdminDashboard() {
 
     const loadData = async () => {
         try {
+            console.log("Loading dashboard data...");
             const [analyticsRes, statsRes] = await Promise.all([
-                getPlatformAnalytics(),
-                getCollegeStats()
+                getPlatformAnalytics().catch(err => {
+                    console.error("Analytics API error:", err);
+                    return { data: { data: {} } };
+                }),
+                getCollegeStats().catch(err => {
+                    console.error("College stats API error:", err);
+                    return { data: { data: {} } };
+                })
             ]);
+            console.log("Analytics response:", analyticsRes);
+            console.log("Stats response:", statsRes);
             setAnalytics(analyticsRes.data);
             setCollegeStats(statsRes.data);
         } catch (err) {
             console.error("Failed to load analytics:", err);
+            setError(err.message);
         } finally {
             setLoading(false);
         }
@@ -31,6 +42,18 @@ export default function SuperAdminDashboard() {
         return (
             <Layout>
                 <h2>Loading...</h2>
+            </Layout>
+        );
+    }
+
+    if (error) {
+        return (
+            <Layout>
+                <div className="error-message">
+                    <h2>Error loading dashboard</h2>
+                    <p>{error}</p>
+                    <button onClick={loadData}>Retry</button>
+                </div>
             </Layout>
         );
     }

@@ -19,7 +19,11 @@ import "../../styles/sidebar.css";
 
 export default function Sidebar() {
 
-    const { user } = useAuth();
+    const { user, loading } = useAuth();
+
+    if (loading) {
+        return <div className="sidebar">Loading...</div>;
+    }
 
     const menus = [
 
