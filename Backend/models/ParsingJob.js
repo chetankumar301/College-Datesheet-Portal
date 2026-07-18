@@ -30,7 +30,7 @@ const parsedExamSchema = new mongoose.Schema(
         default:"REVIEW"
     },
 
-    errors:[String]
+    parseErrors:[String]
 
 },
 {
@@ -92,7 +92,4 @@ const parsingJobSchema = new mongoose.Schema({
     timestamps:true
 });
 
-module.exports = mongoose.model(
-    "ParsingJob",
-    parsingJobSchema
-);
+module.exports = mongoose.models.ParsingJob || mongoose.model("ParsingJob", parsingJobSchema);

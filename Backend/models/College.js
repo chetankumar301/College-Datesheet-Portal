@@ -64,7 +64,7 @@ const collegeSchema = new mongoose.Schema({
   },
   pricingPlan: {
     type: String,
-    enum: ["basic", "standard", "premium", "enterprise"],
+    enum: ["basic", "standard"],
     default: "basic",
   },
   annualFee: {

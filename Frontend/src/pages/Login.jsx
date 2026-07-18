@@ -8,7 +8,7 @@ import "../styles/login.css";
 
 export default function Login() {
 
-    const [studentId, setStudentId] = useState("");
+    const [identifier, setIdentifier] = useState("");
 
     const [password, setPassword] = useState("");
 
@@ -21,14 +21,9 @@ export default function Login() {
         e.preventDefault();
 
         try {
-            console.log("Attempting login with:", studentId);
-           const res = await loginUser(studentId, password);
-
-            console.log("Login response:", res);
-            console.log("User role:", res.user?.role);
+           const res = await loginUser(identifier, password);
 
             if (!res.user) {
-                console.error("No user in response");
                 toast.error("Login Failed: No user data received");
                 return;
             }
@@ -42,26 +37,18 @@ export default function Login() {
                 );
 
                 if (res.user.role === "super_admin") {
-
-                console.log("Navigating to super admin dashboard");
                 navigate("/super-admin/dashboard");
 
                     }
                 else if (res.user.role === "sub_super_admin") {
-
-                console.log("Navigating to sub super admin dashboard");
                 navigate("/sub-super-admin/dashboard");
 
                     }
                 else if (res.user.role === "admin") {
-
-                console.log("Navigating to admin dashboard");
                 navigate("/admin/dashboard");
 
                     }
                 else {
-
-                console.log("Navigating to student dashboard");
                     navigate("/student/dashboard");
 
                 }
@@ -69,8 +56,6 @@ export default function Login() {
         }
 
         catch (err) {
-            console.error("Login error:", err);
-            console.error("Error response:", err.response?.data);
             toast.error(
 
                 err.response?.data?.message ||
@@ -95,9 +80,9 @@ export default function Login() {
 
             <input
                 type="text"
-                placeholder="Student ID / Admin Email"
-                value={studentId}
-                onChange={(e)=>setStudentId(e.target.value)}
+                placeholder="Username or Email"
+                value={identifier}
+                onChange={(e)=>setIdentifier(e.target.value)}
             />
 
             <input

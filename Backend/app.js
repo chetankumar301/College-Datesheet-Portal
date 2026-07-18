@@ -22,6 +22,8 @@ const subscriptionRoutes = require("./routes/subscriptionRoutes");
 const auditLogRoutes = require("./routes/auditLogRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 const datesheetApprovalRoutes = require("./routes/datesheetApprovalRoutes");
+const examinationRoutes = require("./routes/examinationRoutes");
+const errorMiddleware = require("./middleware/errorMiddleware");
 
 const app = express();
 
@@ -56,6 +58,7 @@ app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/audit-logs", auditLogRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/datesheet-approval", datesheetApprovalRoutes);
+app.use("/api/exams", examinationRoutes);
 
 // ==============================
 // Home Route
@@ -80,6 +83,9 @@ app.use("/api/student", studentRoutes);
 
 // Admin Routes
 app.use("/api/admin", adminRoutes);
+
+// Error handler
+app.use(errorMiddleware);
 
 // ==============================
 // 404 Route

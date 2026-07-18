@@ -60,4 +60,4 @@ const subjectSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("Subject", subjectSchema);
+module.exports = mongoose.models.Subject || mongoose.model("Subject", subjectSchema);

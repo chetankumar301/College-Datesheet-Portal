@@ -18,6 +18,7 @@ const{
 authorize
 
 }=require("../middleware/roleMiddleware");
+const { requirePlanFeature } = require("../middleware/planFeatureMiddleware");
 
 const upload=require("../middleware/uploadMiddleware");
 
@@ -28,6 +29,8 @@ router.post(
 protect,
 
 authorize("admin"),
+
+requirePlanFeature("uploadDatesheetPdf"),
 
 upload.single("pdf"),
 

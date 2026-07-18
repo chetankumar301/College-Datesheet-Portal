@@ -67,7 +67,4 @@ const uploadedPDFSchema = new mongoose.Schema(
 timestamps:true
 });
 
-module.exports=mongoose.model(
-"UploadedPDF",
-uploadedPDFSchema
-);
+module.exports = mongoose.models.UploadedPDF || mongoose.model("UploadedPDF", uploadedPDFSchema);

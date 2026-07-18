@@ -64,25 +64,33 @@ const login = async (req, res) => {
   try {
 
     console.log("Login request received:", req.body);
-    const { studentId, password } = req.body;
+    const { password } = req.body;
 
-    const normalizedId = studentId?.trim();
-    console.log("Normalized ID:", normalizedId);
+    const identifier = String(req.body.identifier || req.body.studentId || req.body.email || "")
+      .trim();
+    const normalizedIdentifier = identifier.toLowerCase();
 
-    // Try to find user by enrollmentNo (student) or email (admin)
-    let user = await User.findOne({ enrollmentNo: normalizedId });
+    // Try to find user by enrollmentNo (student) or email/username (admin)
+    let user = await User.findOne({ enrollmentNo: identifier });
     console.log("User found in User model:", !!user);
     
-    // If not found in User model, try Admin model (email is stored lowercase)
+    // If not found in User model, try Admin model (email/username may be stored in mixed case in legacy data)
     if (!user) {
       const Admin = require("../models/Admin");
-      user = await Admin.findOne({ email: normalizedId.toLowerCase() });
+      user = await Admin.findOne({
+        $or: [
+          { email: normalizedIdentifier },
+          { username: normalizedIdentifier },
+          { email: new RegExp(`^${identifier.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") },
+          { username: new RegExp(`^${identifier.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") },
+        ],
+      });
       console.log("User found in Admin model:", !!user);
     }
 
     if (!user) {
 
-      console.log("User not found for:", normalizedId);
+      console.log("User not found for:", identifier);
       return res.status(404).json({
         success: false,
         message: "User not found",

@@ -4,6 +4,7 @@ const router = express.Router();
 const {
   getAllColleges,
   getCollege,
+  getCollegeDetails,
   createCollege,
   updateCollege,
   suspendCollege,
@@ -33,6 +34,9 @@ router.get("/colleges/stats", protect, superAdminOnly, getCollegeStats);
 
 // Get single college
 router.get("/colleges/:id", protect, superAdminOnly, getCollege);
+
+// Get detailed college information
+router.get("/colleges/:id/details", protect, superAdminOnly, getCollegeDetails);
 
 // Create college
 router.post("/colleges", protect, superAdminOnly, createCollege);

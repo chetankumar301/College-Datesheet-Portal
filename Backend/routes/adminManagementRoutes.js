@@ -5,6 +5,7 @@ const {
   getAllAdmins,
   getAllSubSuperAdmins,
   getCollegeAdmins,
+  getCollegeOwners,
   createAdmin,
   updateAdmin,
   deleteAdmin,
@@ -42,6 +43,7 @@ router.get("/sub-super-admins", protect, superAdminOnly, getAllSubSuperAdmins);
 
 // Get admins for a specific college (sub super admin only)
 router.get("/college/:collegeId/admins", protect, subSuperAdminOnly, getCollegeAdmins);
+router.get("/college/:collegeId/owners", protect, superAdminOnly, getCollegeOwners);
 
 // Create new admin (super admin or sub super admin)
 router.post("/admins", protect, createAdmin);

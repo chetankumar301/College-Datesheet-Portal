@@ -8,7 +8,8 @@ import {
     FaBell,
     FaExclamationTriangle,
     FaCog,
-    FaSignOutAlt
+    FaSignOutAlt,
+    FaClipboardList
 } from "react-icons/fa";
 
 import { NavLink } from "react-router-dom";
@@ -53,6 +54,11 @@ export default function Sidebar() {
                 name:"Analytics",
                 path:"/super-admin/analytics",
                 icon:<FaTasks/>
+            },
+            {
+                name:"Examinations",
+                path:"/exams",
+                icon:<FaClipboardList/>
             },
             {
                 name:"Audit Logs",
@@ -114,6 +120,11 @@ export default function Sidebar() {
                 name:"Notifications",
                 path:"/notifications",
                 icon:<FaBell/>
+            },
+            {
+                name:"Examinations",
+                path:"/exams",
+                icon:<FaClipboardList/>
             },
         ] : []),
 

@@ -16,6 +16,14 @@ const adminSchema = new mongoose.Schema(
       trim: true,
     },
 
+    username: {
+      type: String,
+      unique: true,
+      sparse: true,
+      lowercase: true,
+      trim: true,
+    },
+
     password: {
       type: String,
       required: true,
@@ -73,6 +81,37 @@ const adminSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
+    },
+
+    mustChangePassword: {
+      type: Boolean,
+      default: false,
+    },
+
+    passwordChangedAt: {
+      type: Date,
+      default: null,
+    },
+
+    temporaryPasswordCreatedAt: {
+      type: Date,
+      default: null,
+    },
+
+    temporaryPasswordExpiresAt: {
+      type: Date,
+      default: null,
+    },
+
+    accountStatus: {
+      type: String,
+      enum: ["active", "inactive", "pending_password_change"],
+      default: "active",
+    },
+
+    isFirstLogin: {
+      type: Boolean,
+      default: false,
     },
   },
   {

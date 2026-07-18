@@ -1,6 +1,45 @@
 const mongoose = require("mongoose");
 
 const subscriptionSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    enum: ["basic", "standard"],
+    required: true,
+  },
+  code: {
+    type: String,
+    enum: ["basic", "standard"],
+    required: true,
+  },
+  description: {
+    type: String,
+    default: "",
+  },
+  billingCycle: {
+    type: String,
+    enum: ["yearly"],
+    default: "yearly",
+  },
+  pricePerStudent: {
+    type: Number,
+    required: true,
+  },
+  calculatedAmount: {
+    type: Number,
+    required: true,
+  },
+  studentCount: {
+    type: Number,
+    required: true,
+  },
+  features: {
+    type: [String],
+    default: [],
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
   college: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "College",
@@ -8,7 +47,7 @@ const subscriptionSchema = new mongoose.Schema({
   },
   plan: {
     type: String,
-    enum: ["basic", "standard", "premium", "enterprise"],
+    enum: ["basic", "standard"],
     required: true,
   },
   startDate: {

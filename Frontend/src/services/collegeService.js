@@ -10,6 +10,11 @@ export const getCollege = async (id) => {
     return response.data;
 };
 
+export const getCollegeDetails = async (id) => {
+    const response = await api.get(`/colleges/colleges/${id}/details`);
+    return response.data;
+};
+
 export const createCollege = async (collegeData) => {
     const response = await api.post("/colleges/colleges", collegeData);
     return response.data;

@@ -1,109 +1,92 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Layout from "../components/layout/Layout";
-import { getAllSubscriptions, createSubscription, renewSubscription, cancelSubscription } from "../services/subscriptionService";
+import { createSubscription, getAllSubscriptions, cancelSubscription, renewSubscription } from "../services/subscriptionService";
+import { getAllColleges } from "../services/collegeService";
 import toast from "react-hot-toast";
+
+const PLAN_PRICES = { basic: 5, standard: 10 };
+
+const emptyForm = {
+    college: "",
+    plan: "basic",
+    studentCount: 0,
+    startDate: "",
+    endDate: "",
+    paymentMethod: "bank_transfer",
+    billingName: "",
+    billingEmail: "",
+    billingAddress: "",
+};
 
 export default function SubscriptionManagement() {
     const [subscriptions, setSubscriptions] = useState([]);
+    const [colleges, setColleges] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
-    const [formData, setFormData] = useState({
-        college: "",
-        plan: "basic",
-        startDate: "",
-        endDate: "",
-        amount: 0,
-        paymentMethod: "bank_transfer",
-        billingName: "",
-        billingEmail: "",
-        billingAddress: "",
-    });
+    const [formData, setFormData] = useState(emptyForm);
+
+    const calculatedAmount = useMemo(() => {
+        const price = PLAN_PRICES[formData.plan] || 5;
+        return (Number(formData.studentCount) || 0) * price;
+    }, [formData.plan, formData.studentCount]);
 
     useEffect(() => {
-        loadSubscriptions();
+        loadData();
     }, []);
 
-    const loadSubscriptions = async () => {
+    const loadData = async () => {
         try {
-            const res = await getAllSubscriptions();
-            setSubscriptions(res.data);
-        } catch (err) {
-            toast.error("Failed to load subscriptions");
+            const [subsRes, collegesRes] = await Promise.all([getAllSubscriptions(), getAllColleges()]);
+            setSubscriptions(Array.isArray(subsRes.data) ? subsRes.data : []);
+            setColleges(Array.isArray(collegesRes.data) ? collegesRes.data : []);
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to load subscriptions");
         } finally {
             setLoading(false);
         }
     };
 
+    const resetForm = () => setFormData(emptyForm);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await createSubscription(formData);
+            await createSubscription({ ...formData, amount: calculatedAmount });
             toast.success("Subscription created successfully");
             setShowModal(false);
-            setFormData({
-                college: "",
-                plan: "basic",
-                startDate: "",
-                endDate: "",
-                amount: 0,
-                paymentMethod: "bank_transfer",
-                billingName: "",
-                billingEmail: "",
-                billingAddress: "",
-            });
-            loadSubscriptions();
-        } catch (err) {
-            toast.error(err.response?.data?.message || "Operation failed");
+            resetForm();
+            loadData();
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Operation failed");
         }
     };
 
     const handleRenew = async (id) => {
         const endDate = prompt("Enter new end date (YYYY-MM-DD):");
-        const amount = prompt("Enter renewal amount:");
-        if (endDate && amount) {
-            try {
-                await renewSubscription(id, { endDate, amount: parseInt(amount) });
-                toast.success("Subscription renewed successfully");
-                loadSubscriptions();
-            } catch (err) {
-                toast.error("Failed to renew subscription");
-            }
+        const studentCount = prompt("Enter new student count:");
+        if (!endDate || studentCount === null) return;
+        try {
+            await renewSubscription(id, { endDate, studentCount: Number(studentCount) || 0 });
+            toast.success("Subscription renewed successfully");
+            loadData();
+        } catch {
+            toast.error("Failed to renew subscription");
         }
     };
 
     const handleCancel = async (id) => {
-        if (window.confirm("Are you sure you want to cancel this subscription?")) {
-            try {
-                await cancelSubscription(id);
-                toast.success("Subscription cancelled successfully");
-                loadSubscriptions();
-            } catch (err) {
-                toast.error("Failed to cancel subscription");
-            }
+        if (!window.confirm("Are you sure you want to cancel this subscription?")) return;
+        try {
+            await cancelSubscription(id);
+            toast.success("Subscription cancelled successfully");
+            loadData();
+        } catch {
+            toast.error("Failed to cancel subscription");
         }
     };
 
-    const handleCloseModal = () => {
-        setShowModal(false);
-        setFormData({
-            college: "",
-            plan: "basic",
-            startDate: "",
-            endDate: "",
-            amount: 0,
-            paymentMethod: "bank_transfer",
-            billingName: "",
-            billingEmail: "",
-            billingAddress: "",
-        });
-    };
-
     if (loading) {
-        return (
-            <Layout>
-                <h2>Loading...</h2>
-            </Layout>
-        );
+        return <Layout><h2>Loading...</h2></Layout>;
     }
 
     return (
@@ -111,26 +94,14 @@ export default function SubscriptionManagement() {
             <div className="subscription-management">
                 <div className="header">
                     <h1>Subscription Management</h1>
-                    <button 
-                        className="btn-primary"
-                        onClick={() => setShowModal(true)}
-                    >
-                        + Create Subscription
-                    </button>
+                    <button className="btn-primary" onClick={() => setShowModal(true)}>+ Create Subscription</button>
                 </div>
 
                 <div className="subscription-list">
                     <table>
                         <thead>
                             <tr>
-                                <th>College</th>
-                                <th>Plan</th>
-                                <th>Start Date</th>
-                                <th>End Date</th>
-                                <th>Amount</th>
-                                <th>Status</th>
-                                <th>Payment Status</th>
-                                <th>Actions</th>
+                                <th>College</th><th>Plan</th><th>Students</th><th>Price/Student</th><th>Total</th><th>Status</th><th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -138,19 +109,10 @@ export default function SubscriptionManagement() {
                                 <tr key={sub._id}>
                                     <td>{sub.college?.name || "N/A"}</td>
                                     <td>{sub.plan}</td>
-                                    <td>{new Date(sub.startDate).toLocaleDateString()}</td>
-                                    <td>{new Date(sub.endDate).toLocaleDateString()}</td>
-                                    <td>₹{sub.amount?.toLocaleString()}</td>
-                                    <td>
-                                        <span className={`status-badge ${sub.status}`}>
-                                            {sub.status}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span className={`payment-badge ${sub.paymentStatus}`}>
-                                            {sub.paymentStatus}
-                                        </span>
-                                    </td>
+                                    <td>{sub.studentCount || 0}</td>
+                                    <td>₹{sub.pricePerStudent || 0}</td>
+                                    <td>₹{(sub.calculatedAmount || sub.amount || 0).toLocaleString()}</td>
+                                    <td>{sub.status}</td>
                                     <td>
                                         {sub.status === "active" && (
                                             <>
@@ -171,95 +133,34 @@ export default function SubscriptionManagement() {
                             <h2>Create Subscription</h2>
                             <form onSubmit={handleSubmit}>
                                 <div className="form-group">
-                                    <label>College ID:</label>
-                                    <input
-                                        type="text"
-                                        value={formData.college}
-                                        onChange={(e) => setFormData({...formData, college: e.target.value})}
-                                        required
-                                    />
+                                    <label>College</label>
+                                    <select value={formData.college} onChange={(e) => setFormData({ ...formData, college: e.target.value })} required>
+                                        <option value="">Select college</option>
+                                        {colleges.map((college) => (
+                                            <option key={college._id} value={college._id}>{college.name}</option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div className="form-group">
-                                    <label>Plan:</label>
-                                    <select
-                                        value={formData.plan}
-                                        onChange={(e) => setFormData({...formData, plan: e.target.value})}
-                                    >
+                                    <label>Plan</label>
+                                    <select value={formData.plan} onChange={(e) => setFormData({ ...formData, plan: e.target.value })}>
                                         <option value="basic">Basic</option>
                                         <option value="standard">Standard</option>
-                                        <option value="premium">Premium</option>
-                                        <option value="enterprise">Enterprise</option>
                                     </select>
                                 </div>
                                 <div className="form-group">
-                                    <label>Start Date:</label>
-                                    <input
-                                        type="date"
-                                        value={formData.startDate}
-                                        onChange={(e) => setFormData({...formData, startDate: e.target.value})}
-                                        required
-                                    />
+                                    <label>Student Count</label>
+                                    <input type="number" value={formData.studentCount} onChange={(e) => setFormData({ ...formData, studentCount: e.target.value })} required />
                                 </div>
-                                <div className="form-group">
-                                    <label>End Date:</label>
-                                    <input
-                                        type="date"
-                                        value={formData.endDate}
-                                        onChange={(e) => setFormData({...formData, endDate: e.target.value})}
-                                        required
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Amount (₹):</label>
-                                    <input
-                                        type="number"
-                                        value={formData.amount}
-                                        onChange={(e) => setFormData({...formData, amount: parseInt(e.target.value)})}
-                                        required
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Payment Method:</label>
-                                    <select
-                                        value={formData.paymentMethod}
-                                        onChange={(e) => setFormData({...formData, paymentMethod: e.target.value})}
-                                    >
-                                        <option value="bank_transfer">Bank Transfer</option>
-                                        <option value="card">Card</option>
-                                        <option value="upi">UPI</option>
-                                        <option value="cheque">Cheque</option>
-                                    </select>
-                                </div>
-                                <div className="form-group">
-                                    <label>Billing Name:</label>
-                                    <input
-                                        type="text"
-                                        value={formData.billingName}
-                                        onChange={(e) => setFormData({...formData, billingName: e.target.value})}
-                                        required
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Billing Email:</label>
-                                    <input
-                                        type="email"
-                                        value={formData.billingEmail}
-                                        onChange={(e) => setFormData({...formData, billingEmail: e.target.value})}
-                                        required
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Billing Address:</label>
-                                    <input
-                                        type="text"
-                                        value={formData.billingAddress}
-                                        onChange={(e) => setFormData({...formData, billingAddress: e.target.value})}
-                                        required
-                                    />
-                                </div>
+                                <div className="form-group"><strong>Total Amount: ₹{calculatedAmount.toLocaleString()}/year</strong></div>
+                                <div className="form-group"><label>Start Date</label><input type="date" value={formData.startDate} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} required /></div>
+                                <div className="form-group"><label>End Date</label><input type="date" value={formData.endDate} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} required /></div>
+                                <div className="form-group"><label>Billing Name</label><input value={formData.billingName} onChange={(e) => setFormData({ ...formData, billingName: e.target.value })} required /></div>
+                                <div className="form-group"><label>Billing Email</label><input type="email" value={formData.billingEmail} onChange={(e) => setFormData({ ...formData, billingEmail: e.target.value })} required /></div>
+                                <div className="form-group"><label>Billing Address</label><input value={formData.billingAddress} onChange={(e) => setFormData({ ...formData, billingAddress: e.target.value })} required /></div>
                                 <div className="form-actions">
                                     <button type="submit" className="btn-primary">Create</button>
-                                    <button type="button" className="btn-secondary" onClick={handleCloseModal}>Cancel</button>
+                                    <button type="button" className="btn-secondary" onClick={() => { setShowModal(false); resetForm(); }}>Cancel</button>
                                 </div>
                             </form>
                         </div>

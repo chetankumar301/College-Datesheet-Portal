@@ -1,6 +1,7 @@
 const Subscription = require("../models/Subscription");
 const College = require("../models/College");
 const AuditLog = require("../models/AuditLog");
+const { normalizePlan, getPlanConfig, calculatePlanAmount } = require("../services/planPricingService");
 
 // Get all subscriptions (Super Admin only)
 const getAllSubscriptions = async (req, res) => {
@@ -55,7 +56,7 @@ const createSubscription = async (req, res) => {
       plan,
       startDate,
       endDate,
-      amount,
+      studentCount,
       paymentMethod,
       billingName,
       billingEmail,
@@ -71,12 +72,26 @@ const createSubscription = async (req, res) => {
       });
     }
 
+    const normalizedPlan = normalizePlan(plan);
+    const planConfig = getPlanConfig(normalizedPlan);
+    const resolvedStudentCount = Number(studentCount) || Number(collegeExists.currentStudents) || 0;
+    const pricing = calculatePlanAmount(normalizedPlan, resolvedStudentCount);
     const subscription = await Subscription.create({
+      name: planConfig.name,
+      code: planConfig.code,
+      description: planConfig.description,
+      billingCycle: planConfig.billingCycle,
+      pricePerStudent: planConfig.pricePerStudent,
+      calculatedAmount: pricing.calculatedAmount,
+      studentCount: pricing.studentCount,
+      features: planConfig.features,
+      isActive: true,
       college,
-      plan,
+      plan: normalizedPlan,
       startDate,
       endDate,
-      amount,
+      amount: pricing.calculatedAmount,
+      currency: planConfig.currency,
       paymentMethod,
       billingName,
       billingEmail,
@@ -105,7 +120,9 @@ const createSubscription = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Subscription created successfully",
-      data: subscription,
+      data: {
+        subscription,
+      },
     });
   } catch (err) {
     res.status(500).json({
@@ -119,26 +136,32 @@ const createSubscription = async (req, res) => {
 const renewSubscription = async (req, res) => {
   try {
     const { id } = req.params;
-    const { endDate, amount } = req.body;
+    const { endDate, studentCount } = req.body;
 
+    const existing = await Subscription.findById(id).populate("college");
+    if (!existing) {
+      return res.status(404).json({
+        success: false,
+        message: "Subscription not found",
+      });
+    }
+
+    const planConfig = getPlanConfig(existing.plan);
+    const pricing = calculatePlanAmount(existing.plan, Number(studentCount) || existing.studentCount || existing.college?.currentStudents || 0);
     const subscription = await Subscription.findByIdAndUpdate(
       id,
       {
         endDate,
-        amount,
+        studentCount: pricing.studentCount,
+        calculatedAmount: pricing.calculatedAmount,
+        amount: pricing.calculatedAmount,
+        pricePerStudent: planConfig.pricePerStudent,
         status: "active",
         paymentStatus: "paid",
         renewalReminderSent: false,
       },
       { new: true }
     );
-
-    if (!subscription) {
-      return res.status(404).json({
-        success: false,
-        message: "Subscription not found",
-      });
-    }
 
     // Update college subscription end date
     await College.findByIdAndUpdate(subscription.college, {
@@ -159,7 +182,9 @@ const renewSubscription = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Subscription renewed successfully",
-      data: subscription,
+      data: {
+        subscription,
+      },
     });
   } catch (err) {
     res.status(500).json({

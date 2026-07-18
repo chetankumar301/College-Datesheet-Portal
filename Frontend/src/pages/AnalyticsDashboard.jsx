@@ -1,18 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Layout from "../components/layout/Layout";
-import {
-    getRevenueAnalytics,
-    getStudentAnalytics,
-    getAllCollegesAnalytics,
-} from "../services/analyticsService";
+import { getPlatformAnalytics } from "../services/analyticsService";
 import { useAuth } from "../context/AuthContext";
+
+const metricValue = (value) => Number(value || 0).toLocaleString();
 
 export default function AnalyticsDashboard() {
     const { user } = useAuth();
-
-    const [revenue, setRevenue] = useState({});
-    const [studentAnalytics, setStudentAnalytics] = useState({});
-    const [collegeAnalytics, setCollegeAnalytics] = useState([]);
+    const [analytics, setAnalytics] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -21,27 +16,40 @@ export default function AnalyticsDashboard() {
 
     const loadAnalytics = async () => {
         try {
-            if (user?.role === "super_admin") {
-                const [
-                    revenueRes,
-                    studentRes,
-                    collegeRes,
-                ] = await Promise.all([
-                    getRevenueAnalytics(),
-                    getStudentAnalytics(),
-                    getAllCollegesAnalytics(),
-                ]);
-
-                setRevenue(revenueRes || {});
-                setStudentAnalytics(studentRes || {});
-                setCollegeAnalytics(collegeRes || []);
-            }
+            const res = await getPlatformAnalytics();
+            setAnalytics(res.data || {});
         } catch (error) {
             console.error("Failed to load analytics:", error);
         } finally {
             setLoading(false);
         }
     };
+
+    const cards = useMemo(
+        () => [
+            {
+                title: "Total Colleges",
+                value: metricValue(analytics?.totalColleges),
+                note: `Active: ${metricValue(analytics?.activeColleges)}`,
+            },
+            {
+                title: "Total Students",
+                value: metricValue(analytics?.totalStudents),
+                note: `New (30d): ${metricValue(analytics?.newStudents)}`,
+            },
+            {
+                title: "Total Admins",
+                value: metricValue(analytics?.totalAdmins),
+                note: `Sub Super Admins: ${metricValue(analytics?.totalSubSuperAdmins)}`,
+            },
+            {
+                title: "Total Revenue",
+                value: `Rs. ${metricValue(analytics?.totalRevenue)}`,
+                note: `Monthly: Rs. ${metricValue(analytics?.monthlyRevenue)}`,
+            },
+        ],
+        [analytics]
+    );
 
     if (loading) {
         return (
@@ -53,111 +61,76 @@ export default function AnalyticsDashboard() {
 
     return (
         <Layout>
-            <div className="analytics-dashboard">
-
-                <h1>Platform Analytics</h1>
+            <div className="analytics-page">
+                <div className="dashboard-hero">
+                    <div>
+                        <p className="dashboard-kicker">Platform overview</p>
+                        <h1>Analytics Dashboard</h1>
+                        <p className="dashboard-subtitle">
+                            {user?.role === "super_admin"
+                                ? "Monitor platform growth and revenue from one place."
+                                : "Monitor your current institution activity and growth."}
+                        </p>
+                    </div>
+                </div>
 
                 <div className="stats-grid">
-
-                    <div className="stat-card">
-                        <h3>Total Revenue</h3>
-                        <p className="stat-number">
-                            ₹{Number(revenue.totalRevenue || 0).toLocaleString()}
-                        </p>
-                    </div>
-
-                    <div className="stat-card">
-                        <h3>Total Students</h3>
-                        <p className="stat-number">
-                            {studentAnalytics.totalStudents || 0}
-                        </p>
-                    </div>
-
-                    <div className="stat-card">
-                        <h3>Total Colleges</h3>
-                        <p className="stat-number">
-                            {collegeAnalytics.length}
-                        </p>
-                    </div>
-
-                    <div className="stat-card">
-                        <h3>Monthly Revenue</h3>
-                        <p className="stat-number">
-                            ₹{Number(revenue.monthlyRevenue || 0).toLocaleString()}
-                        </p>
-                    </div>
-
+                    {cards.map((card) => (
+                        <div key={card.title} className="stat-card">
+                            <h3>{card.title}</h3>
+                            <p className="stat-number">{card.value}</p>
+                            <p className="stat-label">{card.note}</p>
+                        </div>
+                    ))}
                 </div>
 
                 <div className="dashboard-sections">
-
                     <div className="section">
-                        <h2>Revenue By Plan</h2>
-
-                        {revenue.revenueByPlan &&
-                            Object.entries(revenue.revenueByPlan).map(
-                                ([plan, amount]) => (
-                                    <div
-                                        key={plan}
-                                        className="revenue-item"
-                                    >
-                                        <span>{plan}</span>
-                                        <span>
-                                            ₹{Number(amount).toLocaleString()}
-                                        </span>
-                                    </div>
-                                )
-                            )}
+                        <h2>Revenue Health</h2>
+                        <div className="status-grid">
+                            <div className="status-item active">
+                                <span className="status-dot"></span>
+                                <span>Peak month: {metricValue(analytics?.peakMonthRevenue)}</span>
+                            </div>
+                            <div className="status-item trial">
+                                <span className="status-dot"></span>
+                                <span>Recurring revenue: {metricValue(analytics?.recurringRevenue)}</span>
+                            </div>
+                            <div className="status-item suspended">
+                                <span className="status-dot"></span>
+                                <span>Pending dues: {metricValue(analytics?.pendingRevenue)}</span>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="section">
-                        <h2>Colleges</h2>
-
-                        {collegeAnalytics.length > 0 ? (
-                            collegeAnalytics.map((college, index) => (
-                                <div
-                                    key={college._id || index}
-                                    className="revenue-item"
-                                >
-                                    <span>
-                                        {college.name ||
-                                            college.collegeName ||
-                                            "College"}
-                                    </span>
-
-                                    <span>
-                                        {college.studentCount ||
-                                            college.totalStudents ||
-                                            0}{" "}
-                                        Students
-                                    </span>
-                                </div>
-                            ))
+                        <h2>Revenue By Plan</h2>
+                        {analytics?.revenueByPlan && Object.keys(analytics.revenueByPlan).length ? (
+                            <div className="analytics-list">
+                                {Object.entries(analytics.revenueByPlan).map(([plan, amount]) => (
+                                    <div key={plan} className="analytics-row">
+                                        <span>{plan}</span>
+                                        <span>Rs. {metricValue(amount)}</span>
+                                    </div>
+                                ))}
+                            </div>
                         ) : (
-                            <p>No colleges found.</p>
+                            <p>No plan revenue data yet.</p>
                         )}
                     </div>
 
                     <div className="section">
-                        <h2>Student Analytics</h2>
-
-                        <div className="growth-item">
-                            <span>Total Students</span>
-                            <span className="count">
-                                {studentAnalytics.totalStudents || 0}
-                            </span>
-                        </div>
-
-                        <div className="growth-item">
-                            <span>New Students</span>
-                            <span className="count">
-                                {studentAnalytics.newStudents || 0}
-                            </span>
+                        <h2>Operational Notes</h2>
+                        <div className="section-preview">
+                            <h2>What this dashboard shows</h2>
+                            <ul>
+                                <li>College growth and status distribution</li>
+                                <li>Revenue totals and plan-level breakdowns</li>
+                                <li>Student and admin totals for the platform</li>
+                            </ul>
                         </div>
                     </div>
-
                 </div>
-
             </div>
         </Layout>
     );

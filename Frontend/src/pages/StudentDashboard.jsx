@@ -1,167 +1,72 @@
 import { useEffect, useState } from "react";
-
+import { useNavigate } from "react-router-dom";
 import Layout from "../components/layout/Layout";
-
 import StudentProfileCard from "../components/student/StudentProfileCard";
-
 import NextExamCard from "../components/student/NextExamCard";
-
 import api from "../services/api";
 
 export default function StudentDashboard() {
-
+    const navigate = useNavigate();
     const [dashboard, setDashboard] = useState(null);
-
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-
         loadDashboard();
-
     }, []);
 
     const loadDashboard = async () => {
-
         try {
-
             const res = await api.get("/dashboard");
-
             setDashboard(res.data.data);
-
-        }
-
-        catch (err) {
-
+        } catch (err) {
             console.log(err);
-
-        }
-
-        finally {
-
+        } finally {
             setLoading(false);
-
         }
-
     };
 
     if (loading) {
-
         return (
-
             <Layout>
-
                 <h2>Loading Dashboard...</h2>
-
             </Layout>
-
         );
-
     }
 
     return (
-
         <Layout>
-
-            <h1>
-
-                Student Dashboard
-
-            </h1>
+            <h1>Student Dashboard</h1>
 
             <div className="student-dashboard">
-
                 <StudentProfileCard />
-
-                <NextExamCard
-
-                    exam={dashboard.nextExam}
-
-                />
-
+                <NextExamCard exam={dashboard?.nextExam} />
             </div>
 
             <div className="student-grid">
-
                 <div className="student-box">
-
-                    <h2>
-
-                        📚 Current Datesheet
-
-                    </h2>
-
-                    <button>
-
-                        View Datesheet
-
+                    <h2>Current Datesheet</h2>
+                    <button onClick={() => navigate("/student/published-datesheets")}>
+                        View Published Datesheets
                     </button>
-
                 </div>
 
                 <div className="student-box">
-
-                    <h2>
-
-                        📖 Back Paper Datesheet
-
-                    </h2>
-
-                    <button>
-
+                    <h2>Back Paper Datesheet</h2>
+                    <button onClick={() => navigate("/student/published-datesheets")}>
                         View Back Papers
-
                     </button>
-
                 </div>
 
                 <div className="student-box">
-
-                    <h2>
-
-                        🔔 Notifications
-
-                    </h2>
-
-                    <p>
-
-                        {
-
-                            dashboard.notifications.length
-
-                        }
-
-                        Notifications
-
-                    </p>
-
+                    <h2>Notifications</h2>
+                    <p>{dashboard?.notifications?.length || 0} Notifications</p>
                 </div>
 
                 <div className="student-box">
-
-                    <h2>
-
-                        ⚠ Complaints
-
-                    </h2>
-
-                    <p>
-
-                        {
-
-                            dashboard.pendingComplaints
-
-                        }
-
-                        Pending
-
-                    </p>
-
+                    <h2>Complaints</h2>
+                    <p>{dashboard?.pendingComplaints || 0} Pending</p>
                 </div>
-
             </div>
-
         </Layout>
-
     );
-
 }

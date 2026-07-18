@@ -16,6 +16,7 @@ import StudentComplaints from "../pages/StudentComplaints";
 import StudentNotifications from "../pages/StudentNotifications";
 import StudentProfile from "../pages/StudentProfile";
 import StudentBackDatesheet from "../pages/StudentBackDatesheet";
+import StudentPublishedDatesheets from "../pages/StudentPublishedDatesheets";
 import AdminRoute from "./AdminRoute";
 import StudentRoute from "./StudentRoute";
 import SuperAdminRoute from "./SuperAdminRoute";
@@ -23,11 +24,19 @@ import SubSuperAdminRoute from "./SubSuperAdminRoute";
 import AdminManagement from "../pages/AdminManagement";
 import SuperAdminDashboard from "../pages/SuperAdminDashboard";
 import CollegeManagement from "../pages/CollegeManagement";
+import CollegeDetails from "../pages/CollegeDetails";
 import SubscriptionManagement from "../pages/SubscriptionManagement";
 import SubSuperAdminDashboard from "../pages/SubSuperAdminDashboard";
 import DatesheetApproval from "../pages/DatesheetApproval";
 import AuditLogViewer from "../pages/AuditLogViewer";
 import AnalyticsDashboard from "../pages/AnalyticsDashboard";
+import ExaminationList from "../pages/ExaminationList";
+import CreateExaminationWizard from "../pages/CreateExaminationWizard";
+import ScheduleOptionsComparison from "../pages/ScheduleOptionsComparison";
+import DatesheetCalendar from "../pages/DatesheetCalendar";
+import ConflictPanel from "../pages/ConflictPanel";
+import ExaminationDetail from "../pages/ExaminationDetail";
+import Published from "../pages/Published";
 
 export default function AppRoutes(){
 
@@ -197,6 +206,78 @@ export default function AppRoutes(){
                 />
 
                 <Route
+                path="/super-admin/colleges/:id"
+                element={
+                    <SuperAdminRoute>
+                        <CollegeDetails/>
+                    </SuperAdminRoute>
+                }
+                />
+
+                <Route
+                path="/exams"
+                element={
+                    <ProtectedRoute>
+                        <ExaminationList/>
+                    </ProtectedRoute>
+                }
+                />
+
+                <Route
+                path="/exams/create"
+                element={
+                    <ProtectedRoute>
+                        <CreateExaminationWizard/>
+                    </ProtectedRoute>
+                }
+                />
+
+                <Route
+                path="/exams/:id/compare"
+                element={
+                    <ProtectedRoute>
+                        <ScheduleOptionsComparison/>
+                    </ProtectedRoute>
+                }
+                />
+
+                <Route
+                path="/exams/calendar"
+                element={
+                    <ProtectedRoute>
+                        <DatesheetCalendar/>
+                    </ProtectedRoute>
+                }
+                />
+
+                <Route
+                path="/exams/:id/conflicts"
+                element={
+                    <ProtectedRoute>
+                        <ConflictPanel/>
+                    </ProtectedRoute>
+                }
+                />
+
+                <Route
+                path="/exams/:id"
+                element={
+                    <ProtectedRoute>
+                        <ExaminationDetail/>
+                    </ProtectedRoute>
+                }
+                />
+
+                <Route
+                path="/published"
+                element={
+                    <ProtectedRoute>
+                        <Published/>
+                    </ProtectedRoute>
+                }
+                />
+
+                <Route
 
                 path="/sub-super-admin/dashboard"
 
@@ -305,6 +386,15 @@ path="/student/back"
 element={
 <StudentRoute>
 <StudentBackDatesheet />
+</StudentRoute>
+}
+/>
+
+<Route
+path="/student/published-datesheets"
+element={
+<StudentRoute>
+<StudentPublishedDatesheets />
 </StudentRoute>
 }
 />

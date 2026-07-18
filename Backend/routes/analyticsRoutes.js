@@ -32,12 +32,15 @@ const subSuperAdminOnly = (req, res, next) => {
 };
 
 // Get platform analytics (Super Admin only)
+router.get("/platform", protect, superAdminOnly, getPlatformAnalytics);
 router.get("/analytics/platform", protect, superAdminOnly, getPlatformAnalytics);
 
 // Get college analytics (Sub Super Admin only)
+router.get("/college/:collegeId", protect, subSuperAdminOnly, getCollegeAnalytics);
 router.get("/analytics/college/:collegeId", protect, subSuperAdminOnly, getCollegeAnalytics);
 
 // Get admin activity (Sub Super Admin only)
+router.get("/admin-activity/:collegeId", protect, subSuperAdminOnly, getAdminActivity);
 router.get("/analytics/admin-activity/:collegeId", protect, subSuperAdminOnly, getAdminActivity);
 
 module.exports = router;

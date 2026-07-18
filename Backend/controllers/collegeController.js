@@ -2,6 +2,8 @@ const College = require("../models/College");
 const Admin = require("../models/Admin");
 const User = require("../models/User");
 const Subscription = require("../models/Subscription");
+const AuditLog = require("../models/AuditLog");
+const { normalizePlan, calculatePlanAmount } = require("../services/planPricingService");
 
 // Get all colleges (Super Admin only)
 const getAllColleges = async (req, res) => {
@@ -69,6 +71,46 @@ const getCollege = async (req, res) => {
   }
 };
 
+// Get detailed college data for super admin
+const getCollegeDetails = async (req, res) => {
+  try {
+    const college = await College.findById(req.params.id);
+    if (!college) {
+      return res.status(404).json({
+        success: false,
+        message: "College not found",
+      });
+    }
+
+    const [studentCount, adminCount, ownerCount, subscription, recentLogs] = await Promise.all([
+      User.countDocuments({ college: college._id, role: "student" }),
+      Admin.countDocuments({ college: college._id, role: "admin" }),
+      Admin.countDocuments({ college: college._id, role: "sub_super_admin" }),
+      Subscription.findOne({ college: college._id }).sort({ createdAt: -1 }),
+      AuditLog.find({ college: college._id }).sort({ createdAt: -1 }).limit(15).populate("admin", "name email"),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        college,
+        stats: {
+          studentCount,
+          adminCount,
+          ownerCount,
+        },
+        subscription,
+        activityLogs: recentLogs,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
 // Create new college (Super Admin only)
 const createCollege = async (req, res) => {
   try {
@@ -83,12 +125,34 @@ const createCollege = async (req, res) => {
       country,
       pricingPlan,
       maxStudents,
+      currentStudents,
       annualFee,
       perStudentFee,
     } = req.body;
 
+    const normalizedName = typeof name === "string" ? name.trim() : "";
+    const normalizedCode = typeof code === "string" ? code.trim().toUpperCase() : "";
+    const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+    const normalizedPhone = typeof phone === "string" ? phone.trim() : "";
+    const normalizedAddress = typeof address === "string" ? address.trim() : "";
+    const normalizedCity = typeof city === "string" ? city.trim() : "";
+    const normalizedState = typeof state === "string" ? state.trim() : "";
+    const normalizedCountry = typeof country === "string" && country.trim() ? country.trim() : "India";
+    const normalizedPlan = normalizePlan(pricingPlan);
+    const studentCount = Number(currentStudents ?? maxStudents) || 0;
+    const pricing = calculatePlanAmount(normalizedPlan, studentCount);
+
+    if (!normalizedName || !normalizedCode || !normalizedEmail || !normalizedPhone || !normalizedAddress || !normalizedCity || !normalizedState) {
+      return res.status(400).json({
+        success: false,
+        message: "Please fill all required college fields",
+      });
+    }
+
     // Check if college already exists
-    const existingCollege = await College.findOne({ $or: [{ email }, { code }] });
+    const existingCollege = await College.findOne({
+      $or: [{ email: normalizedEmail }, { code: normalizedCode }],
+    });
     if (existingCollege) {
       return res.status(400).json({
         success: false,
@@ -101,18 +165,19 @@ const createCollege = async (req, res) => {
     subscriptionEnd.setFullYear(subscriptionEnd.getFullYear() + 1);
 
     const college = await College.create({
-      name,
-      code: code.toUpperCase(),
-      email,
-      phone,
-      address,
-      city,
-      state,
-      country: country || "India",
-      pricingPlan,
-      maxStudents,
-      annualFee,
-      perStudentFee,
+      name: normalizedName,
+      code: normalizedCode,
+      email: normalizedEmail,
+      phone: normalizedPhone,
+      address: normalizedAddress,
+      city: normalizedCity,
+      state: normalizedState,
+      country: normalizedCountry,
+      pricingPlan: normalizedPlan,
+      maxStudents: Number(maxStudents) || 1000,
+      currentStudents: studentCount,
+      annualFee: Number(annualFee) || 0,
+      perStudentFee: Number(perStudentFee) || 0,
       subscriptionEnd,
       subscriptionStatus: "trial",
     });
@@ -120,7 +185,13 @@ const createCollege = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "College created successfully",
-      data: college,
+      data: {
+        college,
+        plan: {
+          ...pricing,
+          plan: normalizedPlan,
+        },
+      },
     });
   } catch (err) {
     res.status(500).json({
@@ -138,6 +209,14 @@ const updateCollege = async (req, res) => {
 
     if (updateData.code) {
       updateData.code = updateData.code.toUpperCase();
+    }
+
+    if (updateData.pricingPlan) {
+      updateData.pricingPlan = normalizePlan(updateData.pricingPlan);
+    }
+
+    if (updateData.currentStudents !== undefined) {
+      updateData.currentStudents = Number(updateData.currentStudents) || 0;
     }
 
     const college = await College.findByIdAndUpdate(
@@ -310,6 +389,7 @@ const getCollegeStats = async (req, res) => {
 module.exports = {
   getAllColleges,
   getCollege,
+  getCollegeDetails,
   createCollege,
   updateCollege,
   suspendCollege,
