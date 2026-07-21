@@ -21,7 +21,6 @@ const emptyOwner = {
     name: "",
     username: "",
     email: "",
-    password: "",
     collegeId: "",
 };
 
@@ -97,8 +96,10 @@ export default function CollegeDetails() {
                 await updateCollegeOwner(editingOwner._id, payload);
                 toast.success("College Sub Super Admin updated successfully");
             } else {
-                await createCollegeOwner(payload);
-                toast.success("College Sub Super Admin created successfully");
+                const res = await createCollegeOwner(payload);
+                toast.success(res.data?.emailSent
+                    ? "College Sub Super Admin created and email sent successfully"
+                    : "College Sub Super Admin created successfully");
             }
 
             closeOwnerForm();
@@ -114,7 +115,6 @@ export default function CollegeDetails() {
             name: owner.name || "",
             username: owner.username || "",
             email: owner.email || "",
-            password: "",
             collegeId: id,
         });
         setShowOwnerForm(true);
@@ -488,15 +488,15 @@ export default function CollegeDetails() {
                                     required
                                 />
                             </div>
-                            <div className="form-group">
-                                <label>Temporary Password {editingOwner ? "(leave blank to keep current)" : ""}</label>
-                                <input
-                                    type="password"
-                                    value={ownerForm.password}
-                                    onChange={(e) => setOwnerForm({ ...ownerForm, password: e.target.value })}
-                                    required={!editingOwner}
-                                />
-                            </div>
+                            {!editingOwner && (
+                                <div className="section-preview" style={{ marginBottom: "16px" }}>
+                                    <h2>Temporary password delivery</h2>
+                                    <ul>
+                                        <li>A secure temporary password will be generated on the server.</li>
+                                        <li>The login details will be emailed to this Sub Super Admin.</li>
+                                    </ul>
+                                </div>
+                            )}
                             <div className="form-actions">
                                 <button type="submit" className="btn-primary">
                                     {editingOwner ? "Update" : "Create"}

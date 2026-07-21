@@ -83,6 +83,16 @@ const adminSchema = new mongoose.Schema(
       default: true,
     },
 
+    profileImage: {
+      type: String,
+      default: "",
+    },
+
+    profileImagePublicId: {
+      type: String,
+      default: "",
+    },
+
     mustChangePassword: {
       type: Boolean,
       default: false,

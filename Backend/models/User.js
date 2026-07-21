@@ -73,6 +73,16 @@ academicSession: {
       default: "",
     },
 
+    profileImage: {
+      type: String,
+      default: "",
+    },
+
+    profileImagePublicId: {
+      type: String,
+      default: "",
+    },
+
     isActive: {
       type: Boolean,
       default: true,

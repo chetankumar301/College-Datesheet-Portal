@@ -2,8 +2,8 @@ const Admin = require("../models/Admin");
 const College = require("../models/College");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
-
-const TEMP_PASSWORD_TTL_HOURS = Number(process.env.TEMP_PASSWORD_TTL_HOURS || 48);
+const { sendSubSuperAdminWelcomeEmail } = require("../services/emailService");
+const { revokeUserRefreshTokens } = require("../services/tokenService");
 
 const generateTemporaryPassword = () => {
   const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -22,7 +22,12 @@ const generateTemporaryPassword = () => {
   while (chars.length < 12) {
     chars.push(pick(all));
   }
-  return chars.sort(() => 0.5 - Math.random()).join("");
+  for (let index = chars.length - 1; index > 0; index -= 1) {
+    const swapIndex = crypto.randomInt(index + 1);
+    [chars[index], chars[swapIndex]] = [chars[swapIndex], chars[index]];
+  }
+
+  return chars.join("");
 };
 
 const normalizeUsername = (value = "") => String(value).trim().toLowerCase();
@@ -105,13 +110,48 @@ const getCollegeOwners = async (req, res) => {
 // Create new admin (super admin or sub super admin)
 const createAdmin = async (req, res) => {
   try {
-      const { name, email, password, username, college, collegeId, permissions } = req.body;
+      const { name, email, username, college, collegeId, permissions } = req.body;
       const targetCollege = collegeId || college;
       const normalizedEmail = String(email || "").trim().toLowerCase();
-      const normalizedUsername = normalizeUsername(username || normalizedEmail.split("@")[0]);
-      const isSubSuperAdmin = req.body.role === "sub_super_admin";
+      const normalizedUsername = normalizeUsername(username);
 
-    // Check if admin already exists
+    let role = "admin";
+    let adminCollege = targetCollege;
+
+    if (req.user.role === "super_admin") {
+      role = req.body.role || "admin";
+    } else if (req.user.role === "sub_super_admin") {
+      role = "admin";
+      adminCollege = req.user.college;
+    }
+
+    const isSubSuperAdmin = role === "sub_super_admin";
+
+    if (!name || !normalizedEmail || !normalizedUsername) {
+      return res.status(400).json({
+        success: false,
+        message: "Full name, username, and email are required",
+      });
+    }
+
+    if (isSubSuperAdmin && !adminCollege) {
+      return res.status(400).json({
+        success: false,
+        message: "Assigned college is required for college sub super admins",
+      });
+    }
+
+    const collegeRecord = adminCollege
+      ? await College.findById(adminCollege).select("name code")
+      : null;
+
+    if (isSubSuperAdmin && !collegeRecord) {
+      return res.status(404).json({
+        success: false,
+        message: "Assigned college not found",
+      });
+    }
+
     const existingAdmin = await Admin.findOne({
       $or: [
         { email: normalizedEmail },
@@ -132,28 +172,8 @@ const createAdmin = async (req, res) => {
       });
     }
 
-    const generatedTemporaryPassword = password || generateTemporaryPassword();
+    const generatedTemporaryPassword = generateTemporaryPassword();
     const hashedPassword = await bcrypt.hash(generatedTemporaryPassword, 10);
-
-    // Determine role based on requester
-    let role = "admin";
-    let adminCollege = targetCollege;
-
-    if (req.user.role === "super_admin") {
-      // Super admin can create sub super admins or regular admins
-      role = req.body.role || "admin";
-    } else if (req.user.role === "sub_super_admin") {
-      // Sub super admin can only create regular admins for their college
-      role = "admin";
-      adminCollege = req.user.college;
-    }
-
-    if (role === "sub_super_admin" && !adminCollege) {
-      return res.status(400).json({
-        success: false,
-        message: "College is required for college sub super admins",
-      });
-    }
 
     // Create admin
     const admin = await Admin.create({
@@ -167,19 +187,48 @@ const createAdmin = async (req, res) => {
       mustChangePassword: isSubSuperAdmin,
       passwordChangedAt: null,
       temporaryPasswordCreatedAt: isSubSuperAdmin ? new Date() : null,
-      temporaryPasswordExpiresAt: isSubSuperAdmin ? new Date(Date.now() + TEMP_PASSWORD_TTL_HOURS * 60 * 60 * 1000) : null,
+      temporaryPasswordExpiresAt: null,
       accountStatus: isSubSuperAdmin ? "pending_password_change" : "active",
       isFirstLogin: isSubSuperAdmin,
     });
 
+    let emailSent = false;
+    let emailError = null;
+
+    if (isSubSuperAdmin) {
+      try {
+        await sendSubSuperAdminWelcomeEmail({
+          to: admin.email,
+          name: admin.name,
+          collegeName: collegeRecord.name,
+          username: admin.username,
+          temporaryPassword: generatedTemporaryPassword,
+        });
+        emailSent = true;
+      } catch (err) {
+        emailError = err.message;
+        await Admin.findByIdAndDelete(admin._id);
+        return res.status(500).json({
+          success: false,
+          message: "College Sub Super Admin was not created because the temporary-password email could not be sent",
+          emailSent: false,
+          emailError,
+        });
+      }
+    }
+
+    const adminResponse = admin.toObject();
+    delete adminResponse.password;
+
     res.status(201).json({
       success: true,
       message: role === "sub_super_admin"
-        ? "College Sub Super Admin created successfully"
-        : "Admin created successfully",
+          ? "College Sub Super Admin created successfully"
+          : "Admin created successfully",
       data: {
-        user: admin,
-        emailSent: false,
+        user: adminResponse,
+        emailSent,
+        emailError,
       },
     });
   } catch (err) {
@@ -194,11 +243,21 @@ const createAdmin = async (req, res) => {
 const updateAdmin = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, password, permissions, isActive, collegeId, college } = req.body;
+    const { name, email, username, password, permissions, isActive, collegeId, college } = req.body;
 
-    const updateData = { name, email };
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (email !== undefined) updateData.email = String(email).trim().toLowerCase();
+    if (username !== undefined) updateData.username = normalizeUsername(username);
     if (password) {
       updateData.password = await bcrypt.hash(password, 10);
+      updateData.mustChangePassword = true;
+      updateData.accountStatus = "pending_password_change";
+      updateData.isFirstLogin = true;
+      updateData.temporaryPasswordCreatedAt = new Date();
+      updateData.temporaryPasswordExpiresAt = null;
+      updateData.passwordChangedAt = null;
+      await revokeUserRefreshTokens(id);
     }
     if (permissions) {
       updateData.permissions = permissions;

@@ -19,3 +19,10 @@ export const getProfile = async () => {
     return response.data;
 
 };
+
+export const createNewPassword = async (newPassword) => {
+    const response = await api.post("/auth/create-new-password", {
+        newPassword,
+    });
+    return response.data;
+};

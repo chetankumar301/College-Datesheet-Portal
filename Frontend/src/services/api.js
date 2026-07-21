@@ -2,7 +2,8 @@ import axios from "axios";
 
 const api = axios.create({
 
-    baseURL: "http://localhost:5000/api"
+    baseURL: "http://localhost:5000/api",
+    withCredentials: true
 
 });
 
@@ -30,13 +31,45 @@ api.interceptors.response.use(
 
     (response) => response,
 
-    (error) => {
+    async (error) => {
 
-        if (error.response?.status === 401) {
+        const originalRequest = error.config;
+        const requestUrl = originalRequest?.url || "";
+        const isAuthRequest =
+            requestUrl.includes("/auth/login") ||
+            requestUrl.includes("/auth/refresh") ||
+            requestUrl.includes("/auth/logout");
+
+        if (
+            error.response?.status === 401 &&
+            !originalRequest?._retry &&
+            !isAuthRequest
+        ) {
+
+            originalRequest._retry = true;
+
+            try {
+                const response = await api.post("/auth/refresh");
+                const token = response.data?.token;
+
+                if (token) {
+                    localStorage.setItem("token", token);
+                    originalRequest.headers.Authorization = `Bearer ${token}`;
+                    return api(originalRequest);
+                }
+            } catch (refreshError) {
+                localStorage.removeItem("token");
+                return Promise.reject(refreshError);
+            }
+        }
+
+        if (error.response?.status === 401 && !isAuthRequest) {
 
             localStorage.removeItem("token");
 
-            window.location.href = "/";
+            if (window.location.pathname !== "/") {
+                window.location.replace("/");
+            }
 
         }
 

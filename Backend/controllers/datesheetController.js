@@ -1,9 +1,23 @@
 const Datesheet = require("../models/Datesheet");
+const { uploadBuffer } = require("../services/cloudinaryService");
 
 // Upload Datesheet
 
 exports.uploadDatesheet = async (req, res) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "PDF file is required",
+      });
+    }
+
+    if (req.file.mimetype !== "application/pdf") {
+      return res.status(400).json({
+        success: false,
+        message: "Only PDF files are allowed for datesheet uploads",
+      });
+    }
 
     const {
       title,
@@ -13,7 +27,11 @@ exports.uploadDatesheet = async (req, res) => {
       semester,
     } = req.body;
 
-    const pdfFile = req.file.filename;
+    const uploaded = await uploadBuffer({
+      buffer: req.file.buffer,
+      folder: "college-erp/datesheets",
+      resourceType: "raw",
+    });
 
     const datesheet = await Datesheet.create({
       title,
@@ -21,7 +39,13 @@ exports.uploadDatesheet = async (req, res) => {
       course,
       branch,
       semester,
-      pdfFile,
+      pdfFile: uploaded.secure_url,
+      cloudinary: {
+        secureUrl: uploaded.secure_url,
+        publicId: uploaded.public_id,
+        resourceType: uploaded.resource_type || "raw",
+      },
+      college: req.user.college,
       uploadedBy: req.user._id,
     });
 

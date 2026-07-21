@@ -4,6 +4,7 @@ const User = require("../models/User");
 const Subscription = require("../models/Subscription");
 const AuditLog = require("../models/AuditLog");
 const { normalizePlan, calculatePlanAmount } = require("../services/planPricingService");
+const { uploadBuffer, deleteFile } = require("../services/cloudinaryService");
 
 // Get all colleges (Super Admin only)
 const getAllColleges = async (req, res) => {
@@ -207,6 +208,37 @@ const updateCollege = async (req, res) => {
     const { id } = req.params;
     const updateData = req.body;
 
+    if (req.file) {
+      if (!["image/jpeg", "image/png", "image/webp"].includes(req.file.mimetype)) {
+        return res.status(400).json({
+          success: false,
+          message: "College logo must be JPEG, PNG, or WebP",
+        });
+      }
+
+      const existingCollege = await College.findById(id);
+
+      if (!existingCollege) {
+        return res.status(404).json({
+          success: false,
+          message: "College not found",
+        });
+      }
+
+      const uploadedLogo = await uploadBuffer({
+        buffer: req.file.buffer,
+        folder: "college-erp/college-logos",
+        resourceType: "image",
+      });
+
+      if (existingCollege.logoPublicId) {
+        await deleteFile(existingCollege.logoPublicId, "image");
+      }
+
+      updateData.logo = uploadedLogo.secure_url;
+      updateData.logoPublicId = uploadedLogo.public_id;
+    }
+
     if (updateData.code) {
       updateData.code = updateData.code.toUpperCase();
     }
@@ -328,6 +360,10 @@ const deleteCollege = async (req, res) => {
         success: false,
         message: "College not found",
       });
+    }
+
+    if (college.logoPublicId) {
+      await deleteFile(college.logoPublicId, "image");
     }
 
     // Delete all associated data

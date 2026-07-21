@@ -1,33 +1,17 @@
 const multer=require("multer");
-const path=require("path");
 
-const storage=multer.diskStorage({
+const storage=multer.memoryStorage();
 
-destination(req,file,cb){
-
-cb(null,"uploads/pdfs");
-
-},
-
-filename(req,file,cb){
-
-const uniqueName=Date.now()+"-"+Math.round(Math.random()*1E9);
-
-cb(
-
-null,
-
-uniqueName+path.extname(file.originalname)
-
-);
-
-}
-
-});
+const supportedMimeTypes = new Set([
+    "application/pdf",
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+]);
 
 const fileFilter=(req,file,cb)=>{
 
-if(file.mimetype==="application/pdf"){
+if(supportedMimeTypes.has(file.mimetype)){
 
 cb(null,true);
 
@@ -35,7 +19,7 @@ cb(null,true);
 
 else{
 
-cb(new Error("Only PDF files allowed"));
+cb(new Error("Only PDF, JPEG, PNG, and WebP files are allowed"));
 
 }
 
@@ -47,7 +31,7 @@ storage,
 
 limits:{
 
-fileSize:10*1024*1024
+fileSize:Number(process.env.MAX_UPLOAD_FILE_SIZE || 10*1024*1024)
 
 },
 

@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import api from "../services/api";
+import PageLoader from "../components/common/PageLoader";
 
 const AuthContext = createContext();
 
@@ -23,18 +24,25 @@ export const AuthProvider = ({ children }) => {
 
             if (!token) {
 
-                console.log("No token found, setting loading to false");
-                setLoading(false);
+                try {
+                    const refreshRes = await api.post("/auth/refresh");
+                    if (refreshRes.data?.token) {
+                        localStorage.setItem("token", refreshRes.data.token);
+                        setUser(refreshRes.data.user);
+                    }
+                } catch (err) {
+                    setUser(null);
+                } finally {
+                    setLoading(false);
+                }
                 return;
 
             }
 
-            console.log("Token found, fetching user profile");
             const res = await api.get("/auth/profile");
 
             if (localStorage.getItem("token") === token) {
 
-                console.log("User profile loaded:", res.data.data);
                 setUser(res.data.data);
 
             }
@@ -42,8 +50,6 @@ export const AuthProvider = ({ children }) => {
         }
 
         catch (err) {
-
-            console.error("Error loading user:", err);
 
             localStorage.removeItem("token");
 
@@ -53,7 +59,6 @@ export const AuthProvider = ({ children }) => {
 
         finally {
 
-            console.log("Setting loading to false");
             setLoading(false);
 
         }
@@ -71,6 +76,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = () => {
+        api.post("/auth/logout").catch(() => {});
 
         localStorage.removeItem("token");
 
@@ -79,7 +85,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     if (loading) {
-        return <div className="loading">Loading...</div>;
+        return <PageLoader />;
     }
 
     return (

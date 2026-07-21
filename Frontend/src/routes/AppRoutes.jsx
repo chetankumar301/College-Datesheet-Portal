@@ -1,46 +1,51 @@
 
+import { Suspense, lazy } from "react";
 import { Routes, Route } from "react-router-dom";
 
-import Login from "../pages/Login";
-
-import Dashboard from "../pages/Dashboard";
+import PageLoader from "../components/common/PageLoader";
 
 import ProtectedRoute from "./ProtectedRoute";
 
 import PublicRoute from "./PublicRoute";
-import UploadPDF from "../pages/UploadPDF";
-import Preview from "../pages/Preview";
-import StudentDashboard from "../pages/StudentDashboard";
-import StudentDatesheet from "../pages/StudentDatesheet";
-import StudentComplaints from "../pages/StudentComplaints";
-import StudentNotifications from "../pages/StudentNotifications";
-import StudentProfile from "../pages/StudentProfile";
-import StudentBackDatesheet from "../pages/StudentBackDatesheet";
-import StudentPublishedDatesheets from "../pages/StudentPublishedDatesheets";
 import AdminRoute from "./AdminRoute";
 import StudentRoute from "./StudentRoute";
 import SuperAdminRoute from "./SuperAdminRoute";
 import SubSuperAdminRoute from "./SubSuperAdminRoute";
-import AdminManagement from "../pages/AdminManagement";
-import SuperAdminDashboard from "../pages/SuperAdminDashboard";
-import CollegeManagement from "../pages/CollegeManagement";
-import CollegeDetails from "../pages/CollegeDetails";
-import SubscriptionManagement from "../pages/SubscriptionManagement";
-import SubSuperAdminDashboard from "../pages/SubSuperAdminDashboard";
-import DatesheetApproval from "../pages/DatesheetApproval";
-import AuditLogViewer from "../pages/AuditLogViewer";
-import AnalyticsDashboard from "../pages/AnalyticsDashboard";
-import ExaminationList from "../pages/ExaminationList";
-import CreateExaminationWizard from "../pages/CreateExaminationWizard";
-import ScheduleOptionsComparison from "../pages/ScheduleOptionsComparison";
-import DatesheetCalendar from "../pages/DatesheetCalendar";
-import ConflictPanel from "../pages/ConflictPanel";
-import ExaminationDetail from "../pages/ExaminationDetail";
-import Published from "../pages/Published";
+
+const Login = lazy(() => import("../pages/Login"));
+const CreateNewPassword = lazy(() => import("../pages/CreateNewPassword"));
+const Dashboard = lazy(() => import("../pages/Dashboard"));
+const UploadPDF = lazy(() => import("../pages/UploadPDF"));
+const Preview = lazy(() => import("../pages/Preview"));
+const StudentDashboard = lazy(() => import("../pages/StudentDashboard"));
+const StudentDatesheet = lazy(() => import("../pages/StudentDatesheet"));
+const StudentComplaints = lazy(() => import("../pages/StudentComplaints"));
+const StudentNotifications = lazy(() => import("../pages/StudentNotifications"));
+const StudentProfile = lazy(() => import("../pages/StudentProfile"));
+const StudentBackDatesheet = lazy(() => import("../pages/StudentBackDatesheet"));
+const StudentPublishedDatesheets = lazy(() => import("../pages/StudentPublishedDatesheets"));
+const AdminManagement = lazy(() => import("../pages/AdminManagement"));
+const SuperAdminDashboard = lazy(() => import("../pages/SuperAdminDashboard"));
+const CollegeManagement = lazy(() => import("../pages/CollegeManagement"));
+const CollegeDetails = lazy(() => import("../pages/CollegeDetails"));
+const SubscriptionManagement = lazy(() => import("../pages/SubscriptionManagement"));
+const SubSuperAdminDashboard = lazy(() => import("../pages/SubSuperAdminDashboard"));
+const DatesheetApproval = lazy(() => import("../pages/DatesheetApproval"));
+const AuditLogViewer = lazy(() => import("../pages/AuditLogViewer"));
+const AnalyticsDashboard = lazy(() => import("../pages/AnalyticsDashboard"));
+const ExaminationList = lazy(() => import("../pages/ExaminationList"));
+const CreateExaminationWizard = lazy(() => import("../pages/CreateExaminationWizard"));
+const ScheduleOptionsComparison = lazy(() => import("../pages/ScheduleOptionsComparison"));
+const DatesheetCalendar = lazy(() => import("../pages/DatesheetCalendar"));
+const ConflictPanel = lazy(() => import("../pages/ConflictPanel"));
+const ExaminationDetail = lazy(() => import("../pages/ExaminationDetail"));
+const Published = lazy(() => import("../pages/Published"));
 
 export default function AppRoutes(){
 
     return(
+
+        <Suspense fallback={<PageLoader />}>
 
         <Routes>
 
@@ -58,6 +63,15 @@ export default function AppRoutes(){
 
                 }
 
+            />
+
+            <Route
+                path="/create-new-password"
+                element={
+                    <ProtectedRoute allowPasswordChange>
+                        <CreateNewPassword/>
+                    </ProtectedRoute>
+                }
             />
 
             <Route
@@ -400,6 +414,8 @@ element={
 />
 
         </Routes>
+
+        </Suspense>
 
     );
 

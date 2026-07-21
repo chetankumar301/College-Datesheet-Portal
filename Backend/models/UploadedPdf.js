@@ -33,6 +33,21 @@ const uploadedPDFSchema = new mongoose.Schema(
         default:"application/pdf"
     },
 
+    cloudinary:{
+        secureUrl:{
+            type:String,
+            default:""
+        },
+        publicId:{
+            type:String,
+            default:""
+        },
+        resourceType:{
+            type:String,
+            default:"raw"
+        }
+    },
+
     examType:{
         type:String,
         enum:["MAIN","BACK","PRACTICAL"],
@@ -53,7 +68,7 @@ const uploadedPDFSchema = new mongoose.Schema(
 
     uploadedBy:{
         type:mongoose.Schema.Types.ObjectId,
-        ref:"User",
+        ref:"Admin",
         required:true
     },
 

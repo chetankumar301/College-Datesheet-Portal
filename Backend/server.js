@@ -1,5 +1,5 @@
-const app = require("./app");
 require("dotenv").config();
+const app = require("./app");
 require("./worker/parserWorker");
 
 const connectDB = require("./config/db");

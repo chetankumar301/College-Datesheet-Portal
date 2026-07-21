@@ -41,6 +41,10 @@ const collegeSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
+  logoPublicId: {
+    type: String,
+    default: "",
+  },
   // Subscription details
   subscriptionStatus: {
     type: String,

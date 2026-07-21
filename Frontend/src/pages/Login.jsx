@@ -36,7 +36,11 @@ export default function Login() {
 
                 );
 
-                if (res.user.role === "super_admin") {
+                if (res.user.mustChangePassword) {
+                navigate("/create-new-password");
+
+                    }
+                else if (res.user.role === "super_admin") {
                 navigate("/super-admin/dashboard");
 
                     }

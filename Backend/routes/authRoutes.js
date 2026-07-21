@@ -5,17 +5,30 @@ const router = express.Router();
 const {
     register,
     login,
-    getProfile
+    getProfile,
+    createNewPassword,
+    refresh,
+    logout,
+    uploadProfileImage
 } = require("../controllers/authController");
 
 const {
     protect
 } = require("../middleware/authMiddleware");
+const upload = require("../middleware/uploadMiddleware");
 
 router.post("/register", register);
 
 router.post("/login", login);
 
+router.post("/refresh", refresh);
+
+router.post("/logout", logout);
+
 router.get("/profile", protect, getProfile);
+
+router.post("/profile/image", protect, upload.single("image"), uploadProfileImage);
+
+router.post("/create-new-password", protect, createNewPassword);
 
 module.exports = router;

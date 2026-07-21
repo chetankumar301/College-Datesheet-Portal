@@ -14,6 +14,7 @@ const {
 } = require("../controllers/collegeController");
 
 const { protect } = require("../middleware/authMiddleware");
+const upload = require("../middleware/uploadMiddleware");
 
 // Middleware to check if user is super admin
 const superAdminOnly = (req, res, next) => {
@@ -42,7 +43,7 @@ router.get("/colleges/:id/details", protect, superAdminOnly, getCollegeDetails);
 router.post("/colleges", protect, superAdminOnly, createCollege);
 
 // Update college
-router.put("/colleges/:id", protect, superAdminOnly, updateCollege);
+router.put("/colleges/:id", protect, superAdminOnly, upload.single("logo"), updateCollege);
 
 // Suspend college
 router.post("/colleges/:id/suspend", protect, superAdminOnly, suspendCollege);

@@ -66,6 +66,26 @@ type:mongoose.Schema.Types.ObjectId,
 ref:"UploadedPDF"
 },
 
+pdfFile:{
+type:String,
+default:""
+},
+
+cloudinary:{
+secureUrl:{
+type:String,
+default:""
+},
+publicId:{
+type:String,
+default:""
+},
+resourceType:{
+type:String,
+default:"raw"
+}
+},
+
 uploadedBy:{
 type:mongoose.Schema.Types.ObjectId,
 ref:"Admin"

@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const Admin = require("../models/Admin");
+const { getAccessSecret } = require("../services/tokenService");
 
 const protect = async (req, res, next) => {
 
@@ -36,7 +37,7 @@ const protect = async (req, res, next) => {
 
             token,
 
-            process.env.JWT_SECRET
+            getAccessSecret()
 
         );
 

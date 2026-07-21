@@ -1,11 +1,12 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import PageLoader from "../components/common/PageLoader";
 
 export default function SuperAdminRoute({ children }) {
     const { user, loading } = useAuth();
 
     if (loading) {
-        return <h2>Loading...</h2>;
+        return <PageLoader />;
     }
 
     if (!user) {
