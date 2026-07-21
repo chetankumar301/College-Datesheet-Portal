@@ -172,6 +172,159 @@
     box-shadow:0 12px 28px rgba(15, 23, 42, 0.08);
 }
 
+.datesheet-approval{
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+}
+
+.approval-header,
+.tabs,
+.datesheet-list{
+    background:#fff;
+    border:1px solid rgba(148, 163, 184, 0.18);
+    border-radius:22px;
+    box-shadow:0 12px 26px rgba(15, 23, 42, 0.06);
+}
+
+.approval-header{
+    padding:26px 28px;
+}
+
+.approval-header h1{
+    margin:0;
+    color:#0f172a;
+    font-size:2rem;
+    line-height:1.1;
+}
+
+.tabs{
+    display:flex;
+    gap:10px;
+    padding:10px;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+}
+
+.tab{
+    border:0;
+    border-radius:14px;
+    background:#eff6ff;
+    color:#1e40af;
+    font-weight:800;
+    padding:12px 16px;
+    min-height:44px;
+    white-space:nowrap;
+}
+
+.tab.active{
+    background:#2563eb;
+    color:#fff;
+    box-shadow:0 10px 18px rgba(37, 99, 235, 0.18);
+}
+
+.datesheet-list{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    padding:18px;
+}
+
+.datesheet-card{
+    border:1px solid rgba(148, 163, 184, 0.22);
+    border-radius:18px;
+    padding:18px;
+    background:linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+}
+
+.datesheet-card.rejected{
+    background:linear-gradient(180deg, #ffffff 0%, #fff7f7 100%);
+}
+
+.datesheet-card h3{
+    margin:0 0 12px;
+    color:#0f172a;
+    font-size:1.15rem;
+}
+
+.datesheet-info{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+    gap:10px;
+    color:#475569;
+}
+
+.datesheet-info span,
+.rejection-reason{
+    border-radius:12px;
+    background:#f8fafc;
+    padding:10px 12px;
+}
+
+.datesheet-actions,
+.reject-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:14px;
+}
+
+.btn-approve,
+.btn-reject,
+.btn-publish,
+.btn-confirm,
+.btn-cancel{
+    border:0;
+    border-radius:12px;
+    padding:12px 15px;
+    min-height:44px;
+    font-weight:800;
+}
+
+.btn-approve,
+.btn-publish,
+.btn-confirm{
+    background:#2563eb;
+    color:#fff;
+}
+
+.btn-reject{
+    background:#fee2e2;
+    color:#b91c1c;
+}
+
+.btn-cancel{
+    background:#eff6ff;
+    color:#1e40af;
+}
+
+.reject-form{
+    margin-top:14px;
+    border-top:1px solid #e2e8f0;
+    padding-top:14px;
+}
+
+.reject-form textarea{
+    width:100%;
+    min-height:110px;
+    resize:vertical;
+    border:1px solid #dbe3ef;
+    border-radius:14px;
+    padding:12px 14px;
+}
+
+.approval-empty{
+    padding:26px;
+    border-radius:16px;
+    background:#f8fafc;
+    color:#475569;
+}
+
+.approval-empty h2{
+    margin:0 0 8px;
+    color:#0f172a;
+}
+
 @media (max-width: 1100px){
     .stats-grid{
         grid-template-columns:repeat(2, minmax(0, 1fr));
@@ -183,6 +336,12 @@
 }
 
 @media (max-width: 640px){
+    .sub-super-admin-dashboard,
+    .super-admin-dashboard,
+    .analytics-dashboard{
+        gap:18px;
+    }
+
     .dashboard-hero{
         padding:22px;
         border-radius:20px;
@@ -201,9 +360,42 @@
     .section{
         padding:18px;
         border-radius:18px;
+        min-width:0;
     }
 
     .stat-number{
         font-size:1.75rem;
+    }
+
+    .action-buttons button{
+        width:100%;
+        min-height:48px;
+    }
+
+    .approval-header{
+        padding:20px;
+        border-radius:18px;
+    }
+
+    .approval-header h1{
+        font-size:1.55rem;
+    }
+
+    .datesheet-list{
+        padding:14px;
+        border-radius:18px;
+    }
+
+    .datesheet-card{
+        padding:14px;
+    }
+
+    .datesheet-info{
+        grid-template-columns:1fr;
+    }
+
+    .datesheet-actions button,
+    .reject-actions button{
+        width:100%;
     }
 }

@@ -13,7 +13,6 @@ import SuperAdminRoute from "./SuperAdminRoute";
 import SubSuperAdminRoute from "./SubSuperAdminRoute";
 
 const Login = lazy(() => import("../pages/Login"));
-const CreateNewPassword = lazy(() => import("../pages/CreateNewPassword"));
 const Dashboard = lazy(() => import("../pages/Dashboard"));
 const UploadPDF = lazy(() => import("../pages/UploadPDF"));
 const Preview = lazy(() => import("../pages/Preview"));
@@ -40,6 +39,12 @@ const DatesheetCalendar = lazy(() => import("../pages/DatesheetCalendar"));
 const ConflictPanel = lazy(() => import("../pages/ConflictPanel"));
 const ExaminationDetail = lazy(() => import("../pages/ExaminationDetail"));
 const Published = lazy(() => import("../pages/Published"));
+const Settings = lazy(() => import("../pages/Settings"));
+const Notifications = lazy(() => import("../pages/Notifications"));
+const Subjects = lazy(() => import("../pages/Subjects"));
+const Students = lazy(() => import("../pages/Students"));
+const ParsingJobs = lazy(() => import("../pages/ParsingJobs"));
+const CreateNewPassword = lazy(() => import("../pages/CreateNewPassword"));
 
 export default function AppRoutes(){
 
@@ -105,6 +110,42 @@ export default function AppRoutes(){
 
                 }
 
+                />
+
+                <Route
+                path="/parsing"
+                element={
+                    <AdminRoute>
+                        <ParsingJobs/>
+                    </AdminRoute>
+                }
+                />
+
+                <Route
+                path="/students"
+                element={
+                    <AdminRoute>
+                        <Students/>
+                    </AdminRoute>
+                }
+                />
+
+                <Route
+                path="/subjects"
+                element={
+                    <AdminRoute>
+                        <Subjects/>
+                    </AdminRoute>
+                }
+                />
+
+                <Route
+                path="/notifications"
+                element={
+                    <AdminRoute>
+                        <Notifications/>
+                    </AdminRoute>
+                }
                 />
 
                 <Route
@@ -220,6 +261,33 @@ export default function AppRoutes(){
                 />
 
                 <Route
+                path="/sub-super-admin/admin-management"
+                element={
+                    <SubSuperAdminRoute>
+                        <AdminManagement/>
+                    </SubSuperAdminRoute>
+                }
+                />
+
+                <Route
+                path="/sub-super-admin/audit-logs"
+                element={
+                    <SubSuperAdminRoute>
+                        <AuditLogViewer/>
+                    </SubSuperAdminRoute>
+                }
+                />
+
+                <Route
+                path="/sub-super-admin/reports"
+                element={
+                    <SubSuperAdminRoute>
+                        <AnalyticsDashboard/>
+                    </SubSuperAdminRoute>
+                }
+                />
+
+                <Route
                 path="/super-admin/colleges/:id"
                 element={
                     <SuperAdminRoute>
@@ -287,6 +355,15 @@ export default function AppRoutes(){
                 element={
                     <ProtectedRoute>
                         <Published/>
+                    </ProtectedRoute>
+                }
+                />
+
+                <Route
+                path="/settings"
+                element={
+                    <ProtectedRoute>
+                        <Settings/>
                     </ProtectedRoute>
                 }
                 />

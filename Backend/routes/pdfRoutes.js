@@ -4,6 +4,7 @@ const router=express.Router();
 
 const {
     uploadPDF,
+    getPDFs,
     getPDFStatus,
     deletePDF
 } = require("../controllers/pdfController");
@@ -38,6 +39,14 @@ upload.single("pdf"),
 uploadPDF
 
 );
+
+router.get(
+"/",
+protect,
+authorize("admin"),
+getPDFs
+);
+
 router.get(
 
 "/status/:id",

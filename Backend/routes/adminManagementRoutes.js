@@ -7,6 +7,7 @@ const {
   getCollegeAdmins,
   getCollegeOwners,
   createAdmin,
+  resendAdminCredentials,
   updateAdmin,
   deleteAdmin,
 } = require("../controllers/adminManagementController");
@@ -47,6 +48,16 @@ router.get("/college/:collegeId/owners", protect, superAdminOnly, getCollegeOwne
 
 // Create new admin (super admin or sub super admin)
 router.post("/admins", protect, createAdmin);
+
+// Sub super admin scoped aliases
+router.get("/my-college/admins", protect, subSuperAdminOnly, (req, res) => {
+  req.params.collegeId = req.user.college;
+  return getCollegeAdmins(req, res);
+});
+router.post("/my-college/admins", protect, subSuperAdminOnly, createAdmin);
+
+// Regenerate and resend temporary credentials
+router.post("/admins/:id/resend-credentials", protect, resendAdminCredentials);
 
 // Update admin (super admin or sub super admin)
 router.put("/admins/:id", protect, updateAdmin);

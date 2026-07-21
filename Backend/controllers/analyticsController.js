@@ -3,6 +3,7 @@ const User = require("../models/User");
 const Admin = require("../models/Admin");
 const Subscription = require("../models/Subscription");
 const Datesheet = require("../models/Datesheet");
+const mongoose = require("mongoose");
 
 // Get platform analytics (Super Admin only)
 const getPlatformAnalytics = async (req, res) => {
@@ -111,13 +112,14 @@ const getPlatformAnalytics = async (req, res) => {
 const getCollegeAnalytics = async (req, res) => {
   try {
     const { collegeId } = req.params;
+    const collegeObjectId = new mongoose.Types.ObjectId(collegeId);
 
     const totalStudents = await User.countDocuments({ college: collegeId, role: "student" });
     const totalAdmins = await Admin.countDocuments({ college: collegeId, role: "admin" });
 
     // Students by course
     const studentsByCourse = await User.aggregate([
-      { $match: { college: collegeId, role: "student" } },
+      { $match: { college: collegeObjectId, role: "student" } },
       {
         $group: {
           _id: "$course",
@@ -147,7 +149,7 @@ const getCollegeAnalytics = async (req, res) => {
 
     // Students by semester
     const studentsBySemester = await User.aggregate([
-      { $match: { college: collegeId, role: "student" } },
+      { $match: { college: collegeObjectId, role: "student" } },
       {
         $group: {
           _id: "$semester",
@@ -198,6 +200,7 @@ const getAdminActivity = async (req, res) => {
     startDate.setDate(startDate.getDate() - days);
 
     const AuditLog = require("../models/AuditLog");
+    const collegeObjectId = new mongoose.Types.ObjectId(collegeId);
 
     const activities = await AuditLog.find({
       college: collegeId,
@@ -211,7 +214,7 @@ const getAdminActivity = async (req, res) => {
     const activityByAdmin = await AuditLog.aggregate([
       {
         $match: {
-          college: collegeId,
+          college: collegeObjectId,
           timestamp: { $gte: startDate },
           admin: { $exists: true },
         },

@@ -9,7 +9,6 @@ const PublicRoute = ({ children }) => {
         if (user.mustChangePassword) {
             return <Navigate to="/create-new-password" replace />;
         }
-
         if (user.role === "super_admin") {
             return <Navigate to="/super-admin/dashboard" replace />;
         }

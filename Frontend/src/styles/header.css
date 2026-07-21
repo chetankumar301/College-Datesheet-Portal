@@ -1,6 +1,6 @@
 .header{
 
-    height:70px;
+    min-height:70px;
 
     background:white;
 
@@ -13,6 +13,19 @@
     padding:0 30px;
 
     box-shadow:0 2px 10px rgba(0,0,0,.08);
+    gap:16px;
+}
+
+.header h2{
+    overflow-wrap:anywhere;
+}
+
+.header > div{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
 }
 
 .header button{
@@ -26,4 +39,20 @@
     background:#2563eb;
 
     color:white;
+}
+
+@media (max-width: 700px){
+    .header{
+        align-items:flex-start;
+        flex-direction:column;
+        padding:16px 18px;
+    }
+
+    .header h2{
+        font-size:1.25rem;
+    }
+
+    .header > div{
+        justify-content:flex-start;
+    }
 }

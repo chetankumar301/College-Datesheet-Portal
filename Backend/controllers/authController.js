@@ -85,30 +85,20 @@ const login = async (req, res) => {
       .trim();
     const normalizedIdentifier = identifier.toLowerCase();
 
-    // Try to find student by enrollmentNo/email, then admin by email/username.
-    let user = await User.findOne({
+    // Admin usernames must not be shadowed by student enrollment numbers.
+    let user = await Admin.findOne({
       $or: [
-        { enrollmentNo: identifier },
         { email: normalizedIdentifier },
+        { username: normalizedIdentifier },
       ],
     });
-    
-    // If not found in User model, try Admin model (email/username may be stored in mixed case in legacy data)
-    if (!user) {
-      user = await Admin.findOne({
-        $or: [
-          { email: normalizedIdentifier },
-          { username: normalizedIdentifier },
-          { email: new RegExp(`^${identifier.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") },
-          { username: new RegExp(`^${identifier.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") },
-        ],
-      });
-    }
 
-    if (user.isActive === false) {
-      return res.status(403).json({
-        success: false,
-        message: "Account is inactive",
+    if (!user) {
+      user = await User.findOne({
+        $or: [
+          { enrollmentNo: identifier },
+          { email: normalizedIdentifier },
+        ],
       });
     }
 
@@ -119,6 +109,13 @@ const login = async (req, res) => {
         message: "User not found",
       });
 
+    }
+
+    if (user.isActive === false) {
+      return res.status(403).json({
+        success: false,
+        message: "Account is inactive",
+      });
     }
 
     const match = await bcrypt.compare(password, user.password);
@@ -182,72 +179,6 @@ const getProfile = async (req, res) => {
 
     }
 
-};
-
-const createNewPassword = async (req, res) => {
-  try {
-    const { newPassword } = req.body;
-
-    if (!newPassword || String(newPassword).length < 6) {
-      return res.status(400).json({
-        success: false,
-        message: "New password must be at least 6 characters long",
-      });
-    }
-
-    if (req.user.role !== "sub_super_admin") {
-      return res.status(403).json({
-        success: false,
-        message: "Only College Sub Super Admins can use this endpoint",
-      });
-    }
-
-    const admin = await Admin.findById(req.user._id);
-
-    if (!admin) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    if (!admin.mustChangePassword) {
-      return res.status(400).json({
-        success: false,
-        message: "Password has already been created",
-      });
-    }
-
-    admin.password = await bcrypt.hash(newPassword, 10);
-    admin.mustChangePassword = false;
-    admin.passwordChangedAt = new Date();
-    admin.temporaryPasswordCreatedAt = null;
-    admin.temporaryPasswordExpiresAt = null;
-    admin.accountStatus = "active";
-    admin.isFirstLogin = false;
-
-    await admin.save();
-    await revokeUserRefreshTokens(admin._id);
-
-    const token = signAccessToken(admin);
-    const refreshToken = await signRefreshToken(admin);
-    setRefreshTokenCookie(res, refreshToken);
-
-    const userResponse = admin.toObject();
-    delete userResponse.password;
-
-    res.status(200).json({
-      success: true,
-      message: "Password created successfully",
-      token,
-      user: userResponse,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
 };
 
 const refresh = async (req, res) => {
@@ -323,6 +254,79 @@ const logout = async (req, res) => {
   }
 };
 
+const createNewPassword = async (req, res) => {
+  try {
+    const { password, newPassword, confirmPassword } = req.body;
+    const nextPassword = newPassword || password;
+
+    if (!["sub_super_admin", "admin"].includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: "Password change is only required for admin accounts",
+      });
+    }
+
+    if (!nextPassword || String(nextPassword).length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "New password must be at least 6 characters long",
+      });
+    }
+
+    if (confirmPassword !== undefined && nextPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Password and confirm password do not match",
+      });
+    }
+
+    const user = await Admin.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (!user.mustChangePassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Password has already been changed",
+      });
+    }
+
+    user.password = await bcrypt.hash(nextPassword, 10);
+    user.mustChangePassword = false;
+    user.accountStatus = "active";
+    user.isFirstLogin = false;
+    user.temporaryPasswordCreatedAt = null;
+    user.temporaryPasswordExpiresAt = null;
+    user.passwordChangedAt = new Date();
+    await user.save();
+
+    await revokeUserRefreshTokens(user._id);
+    const token = signAccessToken(user);
+    const refreshToken = await signRefreshToken(user);
+    setRefreshTokenCookie(res, refreshToken);
+
+    const userResponse = user.toObject();
+    delete userResponse.password;
+
+    res.status(200).json({
+      success: true,
+      message: "Password created successfully",
+      token,
+      user: userResponse,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
 const uploadProfileImage = async (req, res) => {
   try {
     if (!req.file) {
@@ -387,12 +391,12 @@ module.exports = {
 
     getProfile,
 
-    createNewPassword,
-
     refresh,
 
     logout
 ,
-    uploadProfileImage
+    uploadProfileImage,
+
+    createNewPassword
 
 };

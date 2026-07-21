@@ -104,6 +104,29 @@ exports.getPDFStatus = async(req,res)=>{
 
 };
 
+exports.getPDFs = async(req,res)=>{
+try{
+const query = req.user.role === "admin"
+? { uploadedBy:req.user._id }
+: {};
+
+const pdfs = await UploadedPDF.find(query)
+.sort({ createdAt:-1 })
+.limit(100);
+
+res.status(200).json({
+success:true,
+data:pdfs
+});
+}
+catch(err){
+res.status(500).json({
+success:false,
+message:err.message
+});
+}
+};
+
 exports.deletePDF = async(req,res)=>{
 try{
 const pdf = await UploadedPDF.findById(req.params.id);

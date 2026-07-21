@@ -6,6 +6,8 @@ const {
 
 createSubject,
 
+getSubjects,
+
 getSubjectsBySemester
 
 } = require("../controllers/subjectController");
@@ -31,6 +33,16 @@ protect,
 authorize("admin"),
 
 createSubject
+
+);
+
+router.get(
+
+"/",
+
+protect,
+
+getSubjects
 
 );
 

@@ -1,5 +1,10 @@
 import api from "./api";
 
+export const getStudents = async () => {
+    const response = await api.get("/student");
+    return response.data;
+};
+
 export const getDashboard = async () => {
 
     const response = await api.get("/dashboard");

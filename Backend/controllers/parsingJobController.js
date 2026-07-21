@@ -1,5 +1,25 @@
 const ParsingJob=require("../models/ParsingJob");
 
+exports.getJobs=async(req,res)=>{
+try{
+const jobs=await ParsingJob.find()
+.populate("uploadedPDF", "originalName filePath status examType createdAt")
+.sort({ createdAt:-1 })
+.limit(100);
+
+res.json({
+success:true,
+data:jobs
+});
+}
+catch(err){
+res.status(500).json({
+success:false,
+message:err.message
+});
+}
+};
+
 exports.getPreview=async(req,res)=>{
 
 try{

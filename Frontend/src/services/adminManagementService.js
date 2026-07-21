@@ -5,8 +5,19 @@ export const getAllAdmins = async () => {
     return response.data;
 };
 
+export const getCollegeAdmins = async (collegeId) => {
+    const id = collegeId?._id || collegeId;
+    const response = await api.get(id ? `/super-admin/college/${id}/admins` : "/super-admin/my-college/admins");
+    return response.data;
+};
+
 export const createAdmin = async (adminData) => {
     const response = await api.post("/super-admin/admins", adminData);
+    return response.data;
+};
+
+export const createCollegeAdmin = async (adminData) => {
+    const response = await api.post("/super-admin/my-college/admins", adminData);
     return response.data;
 };
 
@@ -20,6 +31,11 @@ export const deleteAdmin = async (id) => {
     return response.data;
 };
 
+export const resendAdminCredentials = async (id) => {
+    const response = await api.post(`/super-admin/admins/${id}/resend-credentials`);
+    return response.data;
+};
+
 export const getCollegeOwners = async (collegeId) => {
     const response = await api.get(`/super-admin/college/${collegeId}/owners`);
     return response.data;
@@ -27,7 +43,10 @@ export const getCollegeOwners = async (collegeId) => {
 
 export const createCollegeOwner = async (ownerData) => {
     const response = await api.post("/super-admin/admins", {
-        ...ownerData,
+        name: ownerData.name,
+        username: ownerData.username,
+        email: ownerData.email,
+        collegeId: ownerData.collegeId,
         role: "sub_super_admin",
     });
     return response.data;

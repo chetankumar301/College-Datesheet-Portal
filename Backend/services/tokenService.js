@@ -8,7 +8,8 @@ const REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || "7d";
 const getAccessSecret = () => process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET;
 const getRefreshSecret = () => process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET;
 
-const getUserModelName = (user) => (["super_admin", "sub_super_admin"].includes(user.role) ? "Admin" : "User");
+const getUserModelName = (user) =>
+  ["super_admin", "sub_super_admin", "admin"].includes(user.role) ? "Admin" : "User";
 
 const hashToken = (token) => crypto.createHash("sha256").update(token).digest("hex");
 

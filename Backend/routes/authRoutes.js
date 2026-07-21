@@ -6,10 +6,10 @@ const {
     register,
     login,
     getProfile,
-    createNewPassword,
     refresh,
     logout,
-    uploadProfileImage
+    uploadProfileImage,
+    createNewPassword
 } = require("../controllers/authController");
 
 const {
@@ -25,10 +25,10 @@ router.post("/refresh", refresh);
 
 router.post("/logout", logout);
 
+router.post("/create-new-password", protect, createNewPassword);
+
 router.get("/profile", protect, getProfile);
 
 router.post("/profile/image", protect, upload.single("image"), uploadProfileImage);
-
-router.post("/create-new-password", protect, createNewPassword);
 
 module.exports = router;

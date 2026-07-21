@@ -1,6 +1,7 @@
 .sidebar{
 
     width:260px;
+    flex:0 0 260px;
 
     background:#1e293b;
 
@@ -11,6 +12,7 @@
     flex-direction:column;
 
     padding:25px;
+    min-height:100vh;
 }
 
 .sidebar h2{
@@ -45,4 +47,50 @@
 .sidebar .active{
 
     background:#2563eb;
+}
+
+@media (max-width: 900px){
+    .sidebar{
+        width:100%;
+        min-height:auto;
+        flex:0 0 auto;
+        padding:14px;
+        overflow-x:auto;
+        flex-direction:row;
+        align-items:center;
+        gap:8px;
+        position:sticky;
+        top:0;
+        z-index:20;
+    }
+
+    .sidebar h2{
+        flex:0 0 auto;
+        margin:0 12px 0 0;
+        font-size:1rem;
+        white-space:nowrap;
+    }
+
+    .sidebar a{
+        flex:0 0 auto;
+        margin:0;
+        padding:11px 12px;
+        white-space:nowrap;
+        font-size:0.92rem;
+    }
+}
+
+@media (max-width: 520px){
+    .sidebar{
+        padding:10px;
+    }
+
+    .sidebar h2{
+        font-size:0.95rem;
+    }
+
+    .sidebar a{
+        padding:10px;
+        font-size:0.88rem;
+    }
 }

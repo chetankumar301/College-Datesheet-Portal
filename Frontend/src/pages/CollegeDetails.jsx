@@ -8,7 +8,7 @@ import {
     getCollegeOwners,
     updateCollegeOwner,
     toggleCollegeOwnerStatus,
-    resetCollegeOwnerPassword,
+    resendAdminCredentials,
     deleteAdmin,
 } from "../services/adminManagementService";
 
@@ -85,6 +85,7 @@ export default function CollegeDetails() {
 
     const handleSaveOwner = async (e) => {
         e.preventDefault();
+
         try {
             const payload = {
                 ...ownerForm,
@@ -96,10 +97,8 @@ export default function CollegeDetails() {
                 await updateCollegeOwner(editingOwner._id, payload);
                 toast.success("College Sub Super Admin updated successfully");
             } else {
-                const res = await createCollegeOwner(payload);
-                toast.success(res.data?.emailSent
-                    ? "College Sub Super Admin created and email sent successfully"
-                    : "College Sub Super Admin created successfully");
+                await createCollegeOwner(payload);
+                toast.success("College Sub Super Admin created and credentials email sent");
             }
 
             closeOwnerForm();
@@ -130,14 +129,15 @@ export default function CollegeDetails() {
         }
     };
 
-    const handleResetPassword = async (owner) => {
-        const password = window.prompt("Enter a new password for this owner:");
-        if (!password) return;
+    const handleResendCredentials = async (owner) => {
+        if (!window.confirm(`Resend temporary credentials to ${owner.email}?`)) return;
+
         try {
-            await resetCollegeOwnerPassword(owner._id, password);
-            toast.success("College Sub Super Admin password reset successfully");
+            await resendAdminCredentials(owner._id);
+            toast.success("Credentials email sent successfully");
+            load();
         } catch (err) {
-            toast.error("Failed to reset College Sub Super Admin password");
+            toast.error(err.response?.data?.message || "Failed to resend credentials");
         }
     };
 
@@ -426,9 +426,9 @@ export default function CollegeDetails() {
                                                 <button
                                                     className="btn-secondary"
                                                     type="button"
-                                                    onClick={() => handleResetPassword(owner)}
+                                                    onClick={() => handleResendCredentials(owner)}
                                                 >
-                                                    Reset Password
+                                                    Resend Credentials
                                                 </button>
                                                 <button
                                                     className="btn-delete"
@@ -489,12 +489,8 @@ export default function CollegeDetails() {
                                 />
                             </div>
                             {!editingOwner && (
-                                <div className="section-preview" style={{ marginBottom: "16px" }}>
-                                    <h2>Temporary password delivery</h2>
-                                    <ul>
-                                        <li>A secure temporary password will be generated on the server.</li>
-                                        <li>The login details will be emailed to this Sub Super Admin.</li>
-                                    </ul>
+                                <div className="section-preview">
+                                    Temporary credentials will be generated securely and emailed to this College Sub Super Admin.
                                 </div>
                             )}
                             <div className="form-actions">

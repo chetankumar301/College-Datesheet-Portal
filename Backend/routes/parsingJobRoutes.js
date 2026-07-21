@@ -4,6 +4,8 @@ const router=express.Router();
 
 const{
 
+getJobs,
+
 getPreview,
 
 updateRow,
@@ -23,6 +25,18 @@ const{
 authorize
 
 }=require("../middleware/roleMiddleware");
+
+router.get(
+
+"/",
+
+protect,
+
+authorize("admin"),
+
+getJobs
+
+);
 
 router.get(
 

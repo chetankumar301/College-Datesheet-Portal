@@ -1,16 +1,20 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Layout from "../components/layout/Layout";
 import { getCollegeAnalytics } from "../services/analyticsService";
 import { useAuth } from "../context/AuthContext";
 
 export default function SubSuperAdminDashboard() {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [analytics, setAnalytics] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (user?.college) {
             loadAnalytics();
+        } else {
+            setLoading(false);
         }
     }, [user]);
 
@@ -66,34 +70,34 @@ export default function SubSuperAdminDashboard() {
                     <div className="section">
                         <h2>Students by Course</h2>
                         <div className="course-stats">
-                            {analytics?.studentsByCourse?.map((item) => (
+                            {analytics?.studentsByCourse?.length ? analytics.studentsByCourse.map((item) => (
                                 <div key={item._id} className="course-stat-item">
                                     <span>{item.courseName} ({item.courseCode})</span>
                                     <span className="count">{item.count}</span>
                                 </div>
-                            ))}
+                            )) : <p>No course data yet.</p>}
                         </div>
                     </div>
 
                     <div className="section">
                         <h2>Students by Semester</h2>
                         <div className="semester-stats">
-                            {analytics?.studentsBySemester?.map((item) => (
+                            {analytics?.studentsBySemester?.length ? analytics.studentsBySemester.map((item) => (
                                 <div key={item._id} className="semester-stat-item">
                                     <span>Semester {item._id}</span>
                                     <span className="count">{item.count}</span>
                                 </div>
-                            ))}
+                            )) : <p>No semester data yet.</p>}
                         </div>
                     </div>
 
                     <div className="section">
                         <h2>Quick Actions</h2>
                         <div className="action-buttons">
-                            <button className="btn-primary">View Pending Approvals</button>
-                            <button className="btn-secondary">Manage Admins</button>
-                            <button className="btn-secondary">View Audit Logs</button>
-                            <button className="btn-secondary">View Reports</button>
+                            <button className="btn-primary" type="button" onClick={() => navigate("/sub-super-admin/datesheet-approval")}>View Pending Approvals</button>
+                            <button className="btn-secondary" type="button" onClick={() => navigate("/sub-super-admin/admin-management")}>Manage Admins</button>
+                            <button className="btn-secondary" type="button" onClick={() => navigate("/sub-super-admin/audit-logs")}>View Audit Logs</button>
+                            <button className="btn-secondary" type="button" onClick={() => navigate("/sub-super-admin/reports")}>View Reports</button>
                         </div>
                     </div>
                 </div>

@@ -13,12 +13,12 @@ export default function SubSuperAdminRoute({ children }) {
         return <Navigate to="/" replace />;
     }
 
-    if (user.role !== "sub_super_admin") {
-        return <Navigate to="/admin/dashboard" replace />;
-    }
-
     if (user.mustChangePassword) {
         return <Navigate to="/create-new-password" replace />;
+    }
+
+    if (user.role !== "sub_super_admin") {
+        return <Navigate to="/admin/dashboard" replace />;
     }
 
     return children;

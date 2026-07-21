@@ -2,26 +2,28 @@ const Admin = require("../models/Admin");
 const College = require("../models/College");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
-const { sendSubSuperAdminWelcomeEmail } = require("../services/emailService");
 const { revokeUserRefreshTokens } = require("../services/tokenService");
+const { sendCredentialEmail } = require("../services/emailService");
+
+const normalizeUsername = (value = "") => String(value).trim().toLowerCase();
 
 const generateTemporaryPassword = () => {
-  const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const lower = "abcdefghijklmnopqrstuvwxyz";
-  const numbers = "0123456789";
-  const special = "!@#$%^&*_-+?";
-  const all = upper + lower + numbers + special;
-  const pick = (chars) => chars[Math.floor(Math.random() * chars.length)];
-  const chars = [
-    pick(upper),
-    pick(lower),
-    pick(numbers),
-    pick(special),
-    ...crypto.randomBytes(8).toString("base64").replace(/[^A-Za-z0-9]/g, "").slice(0, 8).split(""),
+  const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const lower = "abcdefghijkmnopqrstuvwxyz";
+  const numbers = "23456789";
+  const symbols = "-_@.";
+  const pool = `${upper}${lower}${numbers}${symbols}`;
+  const required = [
+    upper[crypto.randomInt(0, upper.length)],
+    lower[crypto.randomInt(0, lower.length)],
+    numbers[crypto.randomInt(0, numbers.length)],
+    symbols[crypto.randomInt(0, symbols.length)],
   ];
-  while (chars.length < 12) {
-    chars.push(pick(all));
-  }
+  const rest = Array.from({ length: 10 }, () => {
+    return pool[crypto.randomInt(0, pool.length)];
+  });
+
+  const chars = [...required, ...rest];
   for (let index = chars.length - 1; index > 0; index -= 1) {
     const swapIndex = crypto.randomInt(index + 1);
     [chars[index], chars[swapIndex]] = [chars[swapIndex], chars[index]];
@@ -30,7 +32,25 @@ const generateTemporaryPassword = () => {
   return chars.join("");
 };
 
-const normalizeUsername = (value = "") => String(value).trim().toLowerCase();
+const getRoleLabel = (role) => role === "sub_super_admin" ? "College Sub Super Admin" : "Admin";
+
+const getSmtpPrefixForCreator = (creatorRole) => (
+  creatorRole === "sub_super_admin" ? "COLLEGE_SMTP" : "SMTP"
+);
+
+const toIdString = (value) => {
+  if (!value) return "";
+  return String(value._id || value);
+};
+
+const assertCanManageTarget = (requestUser, targetAdmin) => {
+  if (requestUser.role === "super_admin") return true;
+  return (
+    requestUser.role === "sub_super_admin" &&
+    targetAdmin.role === "admin" &&
+    toIdString(targetAdmin.college) === toIdString(requestUser.college)
+  );
+};
 
 // Get all admins (super admin only)
 const getAllAdmins = async (req, res) => {
@@ -113,7 +133,13 @@ const createAdmin = async (req, res) => {
       const { name, email, username, college, collegeId, permissions } = req.body;
       const targetCollege = collegeId || college;
       const normalizedEmail = String(email || "").trim().toLowerCase();
-      const normalizedUsername = normalizeUsername(username);
+
+    if (!["super_admin", "sub_super_admin"].includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Admin account creation is restricted.",
+      });
+    }
 
     let role = "admin";
     let adminCollege = targetCollege;
@@ -126,6 +152,7 @@ const createAdmin = async (req, res) => {
     }
 
     const isSubSuperAdmin = role === "sub_super_admin";
+    const normalizedUsername = normalizeUsername(username);
 
     if (!name || !normalizedEmail || !normalizedUsername) {
       return res.status(400).json({
@@ -172,8 +199,8 @@ const createAdmin = async (req, res) => {
       });
     }
 
-    const generatedTemporaryPassword = generateTemporaryPassword();
-    const hashedPassword = await bcrypt.hash(generatedTemporaryPassword, 10);
+    const temporaryPassword = generateTemporaryPassword();
+    const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
 
     // Create admin
     const admin = await Admin.create({
@@ -184,37 +211,31 @@ const createAdmin = async (req, res) => {
       role,
       college: adminCollege,
       permissions: permissions || {},
-      mustChangePassword: isSubSuperAdmin,
+      mustChangePassword: true,
       passwordChangedAt: null,
-      temporaryPasswordCreatedAt: isSubSuperAdmin ? new Date() : null,
+      temporaryPasswordCreatedAt: new Date(),
       temporaryPasswordExpiresAt: null,
-      accountStatus: isSubSuperAdmin ? "pending_password_change" : "active",
-      isFirstLogin: isSubSuperAdmin,
+      accountStatus: "pending_password_change",
+      isFirstLogin: true,
     });
 
-    let emailSent = false;
-    let emailError = null;
-
-    if (isSubSuperAdmin) {
-      try {
-        await sendSubSuperAdminWelcomeEmail({
-          to: admin.email,
-          name: admin.name,
-          collegeName: collegeRecord.name,
-          username: admin.username,
-          temporaryPassword: generatedTemporaryPassword,
-        });
-        emailSent = true;
-      } catch (err) {
-        emailError = err.message;
-        await Admin.findByIdAndDelete(admin._id);
-        return res.status(500).json({
-          success: false,
-          message: "College Sub Super Admin was not created because the temporary-password email could not be sent",
-          emailSent: false,
-          emailError,
-        });
-      }
+    try {
+      await sendCredentialEmail({
+        to: normalizedEmail,
+        name,
+        collegeName: collegeRecord?.name || "College",
+        username: normalizedUsername,
+        temporaryPassword,
+        roleLabel: getRoleLabel(role),
+        smtpPrefix: getSmtpPrefixForCreator(req.user.role),
+        replyTo: req.user.email,
+      });
+    } catch (emailErr) {
+      await Admin.findByIdAndDelete(admin._id);
+      return res.status(502).json({
+        success: false,
+        message: `${getRoleLabel(role)} was not created because the credentials email could not be sent`,
+      });
     }
 
     const adminResponse = admin.toObject();
@@ -223,13 +244,84 @@ const createAdmin = async (req, res) => {
     res.status(201).json({
       success: true,
       message: role === "sub_super_admin"
-          ? "College Sub Super Admin created successfully"
-          : "Admin created successfully",
+          ? "College Sub Super Admin created successfully and credentials email sent"
+          : "Admin created successfully and credentials email sent",
       data: {
         user: adminResponse,
-        emailSent,
-        emailError,
       },
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+const resendAdminCredentials = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const admin = await Admin.findById(id).populate("college", "name code");
+
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: "Admin not found",
+      });
+    }
+
+    if (!assertCanManageTarget(req.user, admin)) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. You cannot resend credentials for this account.",
+      });
+    }
+
+    const previousState = {
+      password: admin.password,
+      mustChangePassword: admin.mustChangePassword,
+      accountStatus: admin.accountStatus,
+      isFirstLogin: admin.isFirstLogin,
+      temporaryPasswordCreatedAt: admin.temporaryPasswordCreatedAt,
+      temporaryPasswordExpiresAt: admin.temporaryPasswordExpiresAt,
+      passwordChangedAt: admin.passwordChangedAt,
+    };
+
+    const temporaryPassword = generateTemporaryPassword();
+
+    admin.password = await bcrypt.hash(temporaryPassword, 10);
+    admin.mustChangePassword = true;
+    admin.accountStatus = "pending_password_change";
+    admin.isFirstLogin = true;
+    admin.temporaryPasswordCreatedAt = new Date();
+    admin.temporaryPasswordExpiresAt = null;
+    admin.passwordChangedAt = null;
+    await admin.save();
+    await revokeUserRefreshTokens(admin._id);
+
+    try {
+      await sendCredentialEmail({
+        to: admin.email,
+        name: admin.name,
+        collegeName: admin.college?.name || "College",
+        username: admin.username,
+        temporaryPassword,
+        roleLabel: getRoleLabel(admin.role),
+        smtpPrefix: getSmtpPrefixForCreator(req.user.role),
+        replyTo: req.user.email,
+      });
+    } catch (emailErr) {
+      Object.assign(admin, previousState);
+      await admin.save();
+      return res.status(502).json({
+        success: false,
+        message: "Credentials were not resent because the email could not be delivered",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Credentials email sent successfully",
     });
   } catch (err) {
     res.status(500).json({
@@ -251,12 +343,12 @@ const updateAdmin = async (req, res) => {
     if (username !== undefined) updateData.username = normalizeUsername(username);
     if (password) {
       updateData.password = await bcrypt.hash(password, 10);
-      updateData.mustChangePassword = true;
-      updateData.accountStatus = "pending_password_change";
-      updateData.isFirstLogin = true;
-      updateData.temporaryPasswordCreatedAt = new Date();
+      updateData.mustChangePassword = false;
+      updateData.accountStatus = "active";
+      updateData.isFirstLogin = false;
+      updateData.temporaryPasswordCreatedAt = null;
       updateData.temporaryPasswordExpiresAt = null;
-      updateData.passwordChangedAt = null;
+      updateData.passwordChangedAt = new Date();
       await revokeUserRefreshTokens(id);
     }
     if (permissions) {
@@ -267,6 +359,26 @@ const updateAdmin = async (req, res) => {
     }
     if (collegeId || college) {
       updateData.college = collegeId || college;
+    }
+
+    if (req.user.role === "sub_super_admin") {
+      const targetAdmin = await Admin.findById(id).select("college role");
+
+      if (!targetAdmin) {
+        return res.status(404).json({
+          success: false,
+          message: "Admin not found",
+        });
+      }
+
+      if (targetAdmin.role !== "admin" || String(targetAdmin.college) !== String(req.user.college)) {
+        return res.status(403).json({
+          success: false,
+          message: "Access denied. You can only update admins from your college.",
+        });
+      }
+
+      delete updateData.college;
     }
 
     const admin = await Admin.findByIdAndUpdate(
@@ -310,7 +422,10 @@ const deleteAdmin = async (req, res) => {
     }
 
     // Sub super admin can only delete admins from their college
-    if (req.user.role === "sub_super_admin" && admin.college.toString() !== req.user.college.toString()) {
+    if (
+      req.user.role === "sub_super_admin" &&
+      (admin.role !== "admin" || String(admin.college) !== String(req.user.college))
+    ) {
       return res.status(403).json({
         success: false,
         message: "Access denied. You can only delete admins from your college.",
@@ -337,6 +452,7 @@ module.exports = {
   getCollegeAdmins,
   getCollegeOwners,
   createAdmin,
+  resendAdminCredentials,
   updateAdmin,
   deleteAdmin,
 };

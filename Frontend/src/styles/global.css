@@ -12,6 +12,21 @@ body{
     color:#222;
 }
 
+html,
+body,
+#root{
+    min-height:100%;
+    width:100%;
+    overflow-x:hidden;
+}
+
+img,
+svg,
+canvas,
+video{
+    max-width:100%;
+}
+
 .loading {
     display: flex;
     justify-content: center;
@@ -36,4 +51,12 @@ ul{
 button{
 
     cursor:pointer;
+}
+
+input,
+select,
+textarea,
+button{
+    font:inherit;
+    max-width:100%;
 }

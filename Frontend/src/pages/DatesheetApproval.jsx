@@ -17,6 +17,8 @@ export default function DatesheetApproval() {
     useEffect(() => {
         if (user?.college) {
             loadData();
+        } else {
+            setLoading(false);
         }
     }, [user, activeTab]);
 
@@ -27,9 +29,9 @@ export default function DatesheetApproval() {
                 getApprovedDatesheets(user.college),
                 getRejectedDatesheets(user.college)
             ]);
-            setPending(pendingRes.data);
-            setApproved(approvedRes.data);
-            setRejected(rejectedRes.data);
+            setPending(pendingRes.data || []);
+            setApproved(approvedRes.data || []);
+            setRejected(rejectedRes.data || []);
         } catch (err) {
             toast.error("Failed to load datesheets");
         } finally {
@@ -84,7 +86,15 @@ export default function DatesheetApproval() {
     return (
         <Layout>
             <div className="datesheet-approval">
-                <h1>Datesheet Approval</h1>
+                <div className="approval-header">
+                    <div>
+                        <p className="page-kicker">Review Queue</p>
+                        <h1>Datesheet Approval</h1>
+                        <p className="page-subtitle">
+                            Review datesheets submitted by college admins, approve valid schedules, or return them with clear feedback.
+                        </p>
+                    </div>
+                </div>
                 
                 <div className="tabs">
                     <button 
@@ -110,7 +120,10 @@ export default function DatesheetApproval() {
                 {activeTab === "pending" && (
                     <div className="datesheet-list">
                         {pending.length === 0 ? (
-                            <p>No pending datesheets</p>
+                            <div className="approval-empty">
+                                <h2>No pending datesheets</h2>
+                                <p>Submitted datesheets that need your review will appear here.</p>
+                            </div>
                         ) : (
                             pending.map((datesheet) => (
                                 <div key={datesheet._id} className="datesheet-card">
@@ -147,7 +160,10 @@ export default function DatesheetApproval() {
                 {activeTab === "approved" && (
                     <div className="datesheet-list">
                         {approved.length === 0 ? (
-                            <p>No approved datesheets</p>
+                            <div className="approval-empty">
+                                <h2>No approved datesheets</h2>
+                                <p>Approved datesheets ready for publishing will appear here.</p>
+                            </div>
                         ) : (
                             approved.map((datesheet) => (
                                 <div key={datesheet._id} className="datesheet-card">
@@ -170,7 +186,10 @@ export default function DatesheetApproval() {
                 {activeTab === "rejected" && (
                     <div className="datesheet-list">
                         {rejected.length === 0 ? (
-                            <p>No rejected datesheets</p>
+                            <div className="approval-empty">
+                                <h2>No rejected datesheets</h2>
+                                <p>Rejected datesheets and feedback history will appear here.</p>
+                            </div>
                         ) : (
                             rejected.map((datesheet) => (
                                 <div key={datesheet._id} className="datesheet-card rejected">

@@ -3,7 +3,8 @@ const express = require("express");
 const router = express.Router();
 
 const {
-    getDashboard
+    getDashboard,
+    getStudents
 } = require("../controllers/studentController");
 
 const {
@@ -13,6 +14,13 @@ const {
 const {
     authorize
 } = require("../middleware/roleMiddleware");
+
+router.get(
+    "/",
+    protect,
+    authorize("admin"),
+    getStudents
+);
 
 router.get(
     "/dashboard",

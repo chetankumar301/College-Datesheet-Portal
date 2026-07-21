@@ -37,7 +37,7 @@ export default function Login() {
                 );
 
                 if (res.user.mustChangePassword) {
-                navigate("/create-new-password");
+                navigate("/create-new-password", { replace: true });
 
                     }
                 else if (res.user.role === "super_admin") {
@@ -84,9 +84,11 @@ export default function Login() {
 
             <input
                 type="text"
-                placeholder="Username or Email"
+                placeholder="Username, Email, or Enrollment No."
                 value={identifier}
                 onChange={(e)=>setIdentifier(e.target.value)}
+                autoComplete="username"
+                required
             />
 
             <input
@@ -94,6 +96,8 @@ export default function Login() {
                 placeholder="Password"
                 value={password}
                 onChange={(e)=>setPassword(e.target.value)}
+                autoComplete="current-password"
+                required
             />
 
             <button type="submit">

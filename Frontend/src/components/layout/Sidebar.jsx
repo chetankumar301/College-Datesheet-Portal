@@ -75,13 +75,18 @@ export default function Sidebar() {
             },
             {
                 name:"Admin Management",
-                path:"/super-admin/admin-management",
+                path:"/sub-super-admin/admin-management",
                 icon:<FaCog/>
             },
             {
                 name:"Audit Logs",
-                path:"/super-admin/audit-logs",
+                path:"/sub-super-admin/audit-logs",
                 icon:<FaExclamationTriangle/>
+            },
+            {
+                name:"Reports",
+                path:"/sub-super-admin/reports",
+                icon:<FaTasks/>
             },
         ] : []),
 

@@ -20,7 +20,7 @@ width:`${progress}%`
 
 >
 
-{progress}%
+<span>{progress}%</span>
 
 </div>
 

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Layout from "../components/layout/Layout";
-import { getPlatformAnalytics } from "../services/analyticsService";
+import { getCollegeAnalytics, getPlatformAnalytics } from "../services/analyticsService";
 import { useAuth } from "../context/AuthContext";
 
 const metricValue = (value) => Number(value || 0).toLocaleString();
@@ -11,12 +11,19 @@ export default function AnalyticsDashboard() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        if (user?.role === "sub_super_admin" && !user?.college) {
+            setLoading(false);
+            return;
+        }
+
         loadAnalytics();
-    }, []);
+    }, [user]);
 
     const loadAnalytics = async () => {
         try {
-            const res = await getPlatformAnalytics();
+            const res = user?.role === "sub_super_admin"
+                ? await getCollegeAnalytics(user.college)
+                : await getPlatformAnalytics();
             setAnalytics(res.data || {});
         } catch (error) {
             console.error("Failed to load analytics:", error);
@@ -26,7 +33,28 @@ export default function AnalyticsDashboard() {
     };
 
     const cards = useMemo(
-        () => [
+        () => user?.role === "sub_super_admin" ? [
+            {
+                title: "Total Students",
+                value: metricValue(analytics?.totalStudents),
+                note: "Assigned college",
+            },
+            {
+                title: "Total Admins",
+                value: metricValue(analytics?.totalAdmins),
+                note: "College admins",
+            },
+            {
+                title: "Total Datesheets",
+                value: metricValue(analytics?.totalDatesheets),
+                note: `Published: ${metricValue(analytics?.publishedDatesheets)}`,
+            },
+            {
+                title: "Pending Approval",
+                value: metricValue(analytics?.pendingDatesheets),
+                note: "Need review",
+            },
+        ] : [
             {
                 title: "Total Colleges",
                 value: metricValue(analytics?.totalColleges),
@@ -48,7 +76,7 @@ export default function AnalyticsDashboard() {
                 note: `Monthly: Rs. ${metricValue(analytics?.monthlyRevenue)}`,
             },
         ],
-        [analytics]
+        [analytics, user]
     );
 
     if (loading) {
@@ -85,6 +113,42 @@ export default function AnalyticsDashboard() {
                 </div>
 
                 <div className="dashboard-sections">
+                    {user?.role === "sub_super_admin" ? (
+                        <>
+                            <div className="section">
+                                <h2>Students By Course</h2>
+                                {analytics?.studentsByCourse?.length ? (
+                                    <div className="analytics-list">
+                                        {analytics.studentsByCourse.map((item) => (
+                                            <div key={item._id} className="analytics-row">
+                                                <span>{item.courseName} ({item.courseCode})</span>
+                                                <span>{metricValue(item.count)}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p>No course data yet.</p>
+                                )}
+                            </div>
+
+                            <div className="section">
+                                <h2>Students By Semester</h2>
+                                {analytics?.studentsBySemester?.length ? (
+                                    <div className="analytics-list">
+                                        {analytics.studentsBySemester.map((item) => (
+                                            <div key={item._id} className="analytics-row">
+                                                <span>Semester {item._id}</span>
+                                                <span>{metricValue(item.count)}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p>No semester data yet.</p>
+                                )}
+                            </div>
+                        </>
+                    ) : (
+                    <>
                     <div className="section">
                         <h2>Revenue Health</h2>
                         <div className="status-grid">
@@ -130,6 +194,8 @@ export default function AnalyticsDashboard() {
                             </ul>
                         </div>
                     </div>
+                    </>
+                    )}
                 </div>
             </div>
         </Layout>

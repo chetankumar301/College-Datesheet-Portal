@@ -65,6 +65,8 @@ export default function Dashboard() {
 
     }
 
+    const users = dashboard.users || {};
+
     return (
 
         <Layout>
@@ -79,42 +81,42 @@ export default function Dashboard() {
 
                 <Card
                 title="Students"
-                value={dashboard.users.students}
+                value={users.students || 0}
                 icon={<FaUserGraduate/>}
                 color="#2563eb"
                 />
 
                 <Card
                 title="Uploaded PDFs"
-                value={dashboard.uploadedPDFs}
+                value={dashboard.uploadedPDFs || 0}
                 icon={<FaFilePdf/>}
                 color="#16a34a"
                 />
 
                 <Card
                 title="Schedules"
-                value={dashboard.schedules}
+                value={dashboard.schedules || 0}
                 icon={<FaCalendarAlt/>}
                 color="#ea580c"
                 />
 
                 <Card
                 title="Complaints"
-                value={dashboard.complaints}
+                value={dashboard.complaints || 0}
                 icon={<FaExclamationTriangle/>}
                 color="#dc2626"
                 />
 
                 <Card
                 title="Notifications"
-                value={dashboard.notifications}
+                value={dashboard.notifications || 0}
                 icon={<FaBell/>}
                 color="#9333ea"
                 />
 
                 <Card
                 title="Subjects"
-                value={dashboard.subjects}
+                value={dashboard.subjects || 0}
                 icon={<FaBook/>}
                 color="#0891b2"
                 />

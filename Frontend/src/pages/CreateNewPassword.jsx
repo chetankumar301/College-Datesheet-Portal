@@ -1,42 +1,38 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-
 import { createNewPassword } from "../services/authService";
 import { useAuth } from "../context/AuthContext";
 import "../styles/login.css";
+
+const getHomePath = (role) => {
+    if (role === "super_admin") return "/super-admin/dashboard";
+    if (role === "sub_super_admin") return "/sub-super-admin/dashboard";
+    if (role === "admin") return "/admin/dashboard";
+    return "/student/dashboard";
+};
 
 export default function CreateNewPassword() {
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [saving, setSaving] = useState(false);
+    const { login, user } = useAuth();
     const navigate = useNavigate();
-    const { login } = useAuth();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (newPassword.length < 6) {
-            toast.error("Password must be at least 6 characters long");
-            return;
-        }
-
         if (newPassword !== confirmPassword) {
-            toast.error("Passwords do not match");
+            toast.error("Password and confirm password do not match");
             return;
         }
 
         try {
             setSaving(true);
-            const res = await createNewPassword(newPassword);
-            const token = res.token || localStorage.getItem("token");
-
-            if (token && res.user) {
-                login(token, res.user);
-            }
-
+            const res = await createNewPassword(newPassword, confirmPassword);
+            login(res.token, res.user);
             toast.success("Password created successfully");
-            navigate("/sub-super-admin/dashboard", { replace: true });
+            navigate(getHomePath(res.user?.role), { replace: true });
         } catch (err) {
             toast.error(err.response?.data?.message || "Failed to create password");
         } finally {
@@ -48,28 +44,30 @@ export default function CreateNewPassword() {
         <div className="login-page">
             <div className="login-card">
                 <h1>Create New Password</h1>
-
+                <p className="login-help">
+                    Signed in as {user?.username || user?.email}. Create a permanent password to continue.
+                </p>
                 <form onSubmit={handleSubmit}>
                     <input
                         type="password"
-                        placeholder="New Password"
+                        placeholder="New password"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
-                        required
+                        autoComplete="new-password"
                         minLength={6}
+                        required
                     />
-
                     <input
                         type="password"
-                        placeholder="Confirm New Password"
+                        placeholder="Confirm new password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
+                        autoComplete="new-password"
                         minLength={6}
+                        required
                     />
-
                     <button type="submit" disabled={saving}>
-                        {saving ? "Saving..." : "Create Password"}
+                        {saving ? "Saving..." : "Save Password"}
                     </button>
                 </form>
             </div>
