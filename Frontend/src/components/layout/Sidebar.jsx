@@ -46,19 +46,14 @@ export default function Sidebar() {
                 icon:<FaCalendarAlt/>
             },
             {
-                name:"Admin Management",
-                path:"/super-admin/admin-management",
+                name:"Sub Super Admins",
+                path:"/super-admin/sub-super-admin-management",
                 icon:<FaCog/>
             },
             {
                 name:"Analytics",
                 path:"/super-admin/analytics",
                 icon:<FaTasks/>
-            },
-            {
-                name:"Examinations",
-                path:"/exams",
-                icon:<FaClipboardList/>
             },
             {
                 name:"Audit Logs",

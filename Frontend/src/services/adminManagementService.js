@@ -5,6 +5,11 @@ export const getAllAdmins = async () => {
     return response.data;
 };
 
+export const getAllSubSuperAdmins = async () => {
+    const response = await api.get("/super-admin/sub-super-admins");
+    return response.data;
+};
+
 export const getCollegeAdmins = async (collegeId) => {
     const id = collegeId?._id || collegeId;
     const response = await api.get(id ? `/super-admin/college/${id}/admins` : "/super-admin/my-college/admins");
@@ -61,6 +66,8 @@ export const toggleCollegeOwnerStatus = async (id, isActive) => {
     const response = await api.put(`/super-admin/admins/${id}`, { isActive });
     return response.data;
 };
+
+export const toggleAdminStatus = toggleCollegeOwnerStatus;
 
 export const resetCollegeOwnerPassword = async (id, password) => {
     const response = await api.put(`/super-admin/admins/${id}`, { password });

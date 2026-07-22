@@ -1,4 +1,5 @@
 const Notification=require("../models/Notification");
+const User=require("../models/User");
 
 exports.getMyNotifications=async(req,res)=>{
 
@@ -264,4 +265,52 @@ exports.deleteNotification = async (req, res) => {
 
     }
 
+};
+
+exports.createNotification = async (req, res) => {
+    try {
+        if (req.user.role !== "admin") {
+            return res.status(403).json({
+                success: false,
+                message: "Admin access required"
+            });
+        }
+
+        const { title, message, type = "UPDATE", audience = "all", course, semester, students = [] } = req.body;
+
+        if (!title || !message) {
+            return res.status(400).json({
+                success: false,
+                message: "Title and message are required"
+            });
+        }
+
+        const query = { role: "student", isActive: { $ne: false } };
+        if (req.user.college) query.college = req.user.college;
+
+        if (audience === "course" && course) query.course = course;
+        if (audience === "semester" && semester) query.semester = Number(semester);
+        if (audience === "individual" && students.length) query._id = { $in: students };
+
+        const receivers = await User.find(query).select("_id");
+        const notifications = await Notification.insertMany(receivers.map((receiver) => ({
+            title,
+            message,
+            type,
+            receiver: receiver._id,
+            metadata: {}
+        })));
+
+        res.status(201).json({
+            success: true,
+            message: "Notification sent successfully",
+            count: notifications.length,
+            data: notifications
+        });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
 };

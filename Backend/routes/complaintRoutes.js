@@ -20,11 +20,12 @@ protect
 
 }=require("../middleware/authMiddleware");
 
-const{
-
-authorize
-
-}=require("../middleware/roleMiddleware");
+const adminOnly = (req, res, next) => {
+    if (req.user.role !== "admin") {
+        return res.status(403).json({ success:false, message:"Admin access required" });
+    }
+    next();
+};
 
 router.post(
 
@@ -52,7 +53,7 @@ router.get(
 
 protect,
 
-authorize("admin"),
+adminOnly,
 
 getAllComplaints
 
@@ -64,7 +65,7 @@ router.put(
 
 protect,
 
-authorize("admin"),
+adminOnly,
 
 replyComplaint
 

@@ -47,6 +47,36 @@ const complaintSchema = new mongoose.Schema({
         default:"PENDING"
     },
 
+    priority:{
+        type:String,
+        enum:["LOW","MEDIUM","HIGH","URGENT"],
+        default:"MEDIUM"
+    },
+
+    category:{
+        type:String,
+        default:"Exam"
+    },
+
+    assignedTo:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Admin",
+        default:null
+    },
+
+    history:[{
+        status:String,
+        note:String,
+        by:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Admin"
+        },
+        at:{
+            type:Date,
+            default:Date.now
+        }
+    }],
+
     adminReply:{
         type:String,
         default:""

@@ -13,6 +13,8 @@ markAllAsRead,
 getUnreadCount,
 
 deleteNotification
+,
+createNotification
 
 }=require("../controllers/notificationController");
 
@@ -21,6 +23,25 @@ const{
 protect
 
 }=require("../middleware/authMiddleware");
+
+const adminOnly = (req, res, next) => {
+    if (req.user.role !== "admin") {
+        return res.status(403).json({ success: false, message: "Admin access required" });
+    }
+    next();
+};
+
+router.post(
+
+"/",
+
+protect,
+
+adminOnly,
+
+createNotification
+
+);
 
 router.get(
 

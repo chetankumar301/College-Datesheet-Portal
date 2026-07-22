@@ -22,9 +22,9 @@ export default function AdminRoute({ children }) {
         return <Navigate to="/create-new-password" replace />;
     }
 
-    if (user.role !== "admin" && user.role !== "super_admin") {
+    if (user.role !== "admin") {
 
-        return <Navigate to="/student/dashboard" replace />;
+        return <Navigate to={user.role === "super_admin" ? "/super-admin/dashboard" : "/student/dashboard"} replace />;
 
     }
 

@@ -29,7 +29,7 @@ const { authorize } = require("../middleware/roleMiddleware");
 const { requirePlanFeature } = require("../middleware/planFeatureMiddleware");
 
 const adminAccess = (req, res, next) => {
-  if (!["admin", "super_admin", "sub_super_admin", "college_owner"].includes(req.user.role)) {
+  if (req.user.role !== "admin") {
     return res.status(403).json({ success: false, message: "Access denied" });
   }
   next();

@@ -94,13 +94,22 @@ exports.getAllComplaints=async(req,res)=>{
 
 try{
 
-const complaints=await Complaint.find()
+const query={};
+if(req.query.status) query.status=req.query.status;
+if(req.query.priority) query.priority=req.query.priority;
+if(req.query.category) query.category={ $regex:req.query.category, $options:"i" };
+
+const complaints=await Complaint.find(query)
 
 .populate("student")
 
 .populate("subject1")
 
 .populate("subject2")
+
+.populate("assignedTo","name email username")
+
+.populate("history.by","name email username")
 
 .sort({
 
@@ -154,13 +163,25 @@ message:"Complaint not found"
 
 }
 
-complaint.adminReply=req.body.reply;
+complaint.adminReply=req.body.reply || complaint.adminReply;
 
-complaint.status="RESOLVED";
+complaint.status=req.body.status || "RESOLVED";
+
+complaint.priority=req.body.priority || complaint.priority;
+
+complaint.category=req.body.category || complaint.category;
+
+complaint.assignedTo=req.body.assignedTo || req.user._id;
 
 complaint.repliedBy=req.user._id;
 
 complaint.repliedAt=new Date();
+
+complaint.history.push({
+status:complaint.status,
+note:req.body.reply || req.body.note || "Complaint updated",
+by:req.user._id
+});
 
 await complaint.save();
 

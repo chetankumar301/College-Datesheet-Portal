@@ -371,7 +371,7 @@ const updateAdmin = async (req, res) => {
         });
       }
 
-      if (targetAdmin.role !== "admin" || String(targetAdmin.college) !== String(req.user.college)) {
+      if (targetAdmin.role !== "admin" || toIdString(targetAdmin.college) !== toIdString(req.user.college)) {
         return res.status(403).json({
           success: false,
           message: "Access denied. You can only update admins from your college.",
@@ -424,7 +424,7 @@ const deleteAdmin = async (req, res) => {
     // Sub super admin can only delete admins from their college
     if (
       req.user.role === "sub_super_admin" &&
-      (admin.role !== "admin" || String(admin.college) !== String(req.user.college))
+      (admin.role !== "admin" || toIdString(admin.college) !== toIdString(req.user.college))
     ) {
       return res.status(403).json({
         success: false,

@@ -45,6 +45,7 @@ const Subjects = lazy(() => import("../pages/Subjects"));
 const Students = lazy(() => import("../pages/Students"));
 const ParsingJobs = lazy(() => import("../pages/ParsingJobs"));
 const CreateNewPassword = lazy(() => import("../pages/CreateNewPassword"));
+const Complaints = lazy(() => import("../pages/Complaints"));
 
 export default function AppRoutes(){
 
@@ -144,6 +145,15 @@ export default function AppRoutes(){
                 element={
                     <AdminRoute>
                         <Notifications/>
+                    </AdminRoute>
+                }
+                />
+
+                <Route
+                path="/complaints"
+                element={
+                    <AdminRoute>
+                        <Complaints/>
                     </AdminRoute>
                 }
                 />
@@ -261,6 +271,15 @@ export default function AppRoutes(){
                 />
 
                 <Route
+                path="/super-admin/sub-super-admin-management"
+                element={
+                <SuperAdminRoute>
+                <AdminManagement/>
+                </SuperAdminRoute>
+                }
+                />
+
+                <Route
                 path="/sub-super-admin/admin-management"
                 element={
                     <SubSuperAdminRoute>
@@ -299,54 +318,54 @@ export default function AppRoutes(){
                 <Route
                 path="/exams"
                 element={
-                    <ProtectedRoute>
+                    <AdminRoute>
                         <ExaminationList/>
-                    </ProtectedRoute>
+                    </AdminRoute>
                 }
                 />
 
                 <Route
                 path="/exams/create"
                 element={
-                    <ProtectedRoute>
+                    <AdminRoute>
                         <CreateExaminationWizard/>
-                    </ProtectedRoute>
+                    </AdminRoute>
                 }
                 />
 
                 <Route
                 path="/exams/:id/compare"
                 element={
-                    <ProtectedRoute>
+                    <AdminRoute>
                         <ScheduleOptionsComparison/>
-                    </ProtectedRoute>
+                    </AdminRoute>
                 }
                 />
 
                 <Route
                 path="/exams/calendar"
                 element={
-                    <ProtectedRoute>
+                    <AdminRoute>
                         <DatesheetCalendar/>
-                    </ProtectedRoute>
+                    </AdminRoute>
                 }
                 />
 
                 <Route
                 path="/exams/:id/conflicts"
                 element={
-                    <ProtectedRoute>
+                    <AdminRoute>
                         <ConflictPanel/>
-                    </ProtectedRoute>
+                    </AdminRoute>
                 }
                 />
 
                 <Route
                 path="/exams/:id"
                 element={
-                    <ProtectedRoute>
+                    <AdminRoute>
                         <ExaminationDetail/>
-                    </ProtectedRoute>
+                    </AdminRoute>
                 }
                 />
 

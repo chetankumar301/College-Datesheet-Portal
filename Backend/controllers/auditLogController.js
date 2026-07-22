@@ -3,11 +3,18 @@ const AuditLog = require("../models/AuditLog");
 // Get all audit logs (Super Admin and Sub Super Admin)
 const getAllAuditLogs = async (req, res) => {
   try {
-    const { page = 1, limit = 50, action, college, startDate, endDate } = req.query;
+    const { page = 1, limit = 50, action, college, startDate, endDate, search, role } = req.query;
     
     const query = {};
     if (action) query.action = action;
     if (college) query.college = college;
+    if (search) {
+      query.$or = [
+        { description: { $regex: search, $options: "i" } },
+        { action: { $regex: search, $options: "i" } },
+        { ipAddress: { $regex: search, $options: "i" } },
+      ];
+    }
     if (startDate && endDate) {
       query.timestamp = {
         $gte: new Date(startDate),
@@ -20,15 +27,19 @@ const getAllAuditLogs = async (req, res) => {
       query.college = req.user.college;
     }
 
-    const logs = await AuditLog.find(query)
-      .populate("user", "name email")
-      .populate("admin", "name email")
+    let logs = await AuditLog.find(query)
+      .populate("user", "name email role")
+      .populate("admin", "name email username role")
       .populate("college", "name code")
       .sort({ timestamp: -1 })
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
 
-    const total = await AuditLog.countDocuments(query);
+    if (role) {
+      logs = logs.filter((log) => (log.admin?.role || log.user?.role || "").toLowerCase() === role.toLowerCase());
+    }
+
+    const total = role ? logs.length : await AuditLog.countDocuments(query);
 
     res.status(200).json({
       success: true,

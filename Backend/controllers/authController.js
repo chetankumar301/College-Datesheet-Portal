@@ -129,6 +129,11 @@ const login = async (req, res) => {
 
     }
 
+    if (user instanceof Admin || ["super_admin", "sub_super_admin", "admin"].includes(user.role)) {
+      user.lastLogin = new Date();
+      await user.save();
+    }
+
     const token = signAccessToken(user);
     const refreshToken = await signRefreshToken(user);
     setRefreshTokenCookie(res, refreshToken);

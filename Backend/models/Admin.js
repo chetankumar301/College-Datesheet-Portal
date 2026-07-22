@@ -123,6 +123,11 @@ const adminSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    lastLogin: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

@@ -35,3 +35,13 @@ export const getMyComplaints = async () => {
     return response.data;
 
 };
+
+export const getAdminComplaints = async (params = {}) => {
+    const response = await api.get("/complaints/admin", { params });
+    return response.data;
+};
+
+export const updateComplaintReply = async (id, data) => {
+    const response = await api.put(`/complaints/reply/${id}`, data);
+    return response.data;
+};
