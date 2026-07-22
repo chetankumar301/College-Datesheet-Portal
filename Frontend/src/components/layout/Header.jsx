@@ -3,7 +3,7 @@ import { FaBell } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
-export default function Header(){
+export default function Header({ onMenuClick }){
 
     const{
 
@@ -26,6 +26,12 @@ const handleLogout = () => {
     return(
 
         <div className="header">
+
+            <button className="header-menu-button" type="button" onClick={onMenuClick} aria-label="Open sidebar">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
 
             <h2>
 

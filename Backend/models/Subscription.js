@@ -122,9 +122,8 @@ const subscriptionSchema = new mongoose.Schema({
   },
 });
 
-subscriptionSchema.pre("save", function (next) {
+subscriptionSchema.pre("save", function () {
   this.updatedAt = Date.now();
-  next();
 });
 
 module.exports = mongoose.model("Subscription", subscriptionSchema);

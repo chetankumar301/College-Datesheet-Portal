@@ -18,12 +18,12 @@ import { useAuth } from "../../context/AuthContext";
 
 import "../../styles/sidebar.css";
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen = false, onClose }) {
 
     const { user, loading } = useAuth();
 
     if (loading) {
-        return <div className="sidebar">Loading...</div>;
+        return <div className={`sidebar ${isOpen ? "is-open" : ""}`}>Loading...</div>;
     }
 
     const menus = [
@@ -138,7 +138,7 @@ export default function Sidebar() {
 
     return(
 
-        <div className="sidebar">
+        <aside className={`sidebar ${isOpen ? "is-open" : ""}`}>
 
             <h2>
 
@@ -156,6 +156,8 @@ export default function Sidebar() {
 
                         to={menu.path}
 
+                        onClick={onClose}
+
                     >
 
                         {menu.icon}
@@ -168,7 +170,7 @@ export default function Sidebar() {
 
             }
 
-        </div>
+        </aside>
 
     );
 

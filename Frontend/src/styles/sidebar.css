@@ -1,7 +1,7 @@
 .sidebar{
 
-    width:260px;
-    flex:0 0 260px;
+    width:min(82vw, 300px);
+    flex:0 0 auto;
 
     background:#1e293b;
 
@@ -13,6 +13,18 @@
 
     padding:25px;
     min-height:100vh;
+    overflow-y:auto;
+    position:fixed;
+    top:0;
+    left:0;
+    z-index:40;
+    transform:translateX(-105%);
+    transition:transform 0.25s ease;
+    box-shadow:12px 0 30px rgba(15,23,42,0.24);
+}
+
+.sidebar.is-open{
+    transform:translateX(0);
 }
 
 .sidebar h2{
@@ -51,32 +63,23 @@
 
 @media (max-width: 900px){
     .sidebar{
-        width:100%;
-        min-height:auto;
-        flex:0 0 auto;
-        padding:14px;
-        overflow-x:auto;
-        flex-direction:row;
-        align-items:center;
-        gap:8px;
-        position:sticky;
-        top:0;
-        z-index:20;
+        width:min(82vw, 300px);
+        padding:22px;
     }
 
     .sidebar h2{
         flex:0 0 auto;
-        margin:0 12px 0 0;
-        font-size:1rem;
-        white-space:nowrap;
+        margin:0 0 24px;
+        font-size:1.1rem;
+        white-space:normal;
     }
 
     .sidebar a{
         flex:0 0 auto;
-        margin:0;
-        padding:11px 12px;
-        white-space:nowrap;
-        font-size:0.92rem;
+        margin:0 0 8px;
+        padding:13px 14px;
+        white-space:normal;
+        font-size:0.95rem;
     }
 }
 

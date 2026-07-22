@@ -104,9 +104,8 @@ const collegeSchema = new mongoose.Schema({
 });
 
 // Update the updatedAt timestamp before saving
-collegeSchema.pre("save", function (next) {
+collegeSchema.pre("save", function () {
   this.updatedAt = Date.now();
-  next();
 });
 
 module.exports = mongoose.model("College", collegeSchema);
